@@ -55,10 +55,10 @@ extension NavigationRouter : NavigationCoordinator {
 
 public struct NavigationRouterView: View {
     
-    @StateObject var router: NavigationRouter
+    @ObservedObject var router: NavigationRouter
     
     public init(router: NavigationRouter) {
-        _router = StateObject(wrappedValue: router)
+        _router = ObservedObject(wrappedValue: router)
     }
     
     public var body: some View {

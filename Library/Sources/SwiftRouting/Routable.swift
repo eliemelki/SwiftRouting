@@ -11,7 +11,9 @@ public typealias Routable = ViewFactory & Hashable & Identifiable
 
 //Type Eraser
 //Acts also as a wrapper for viewFactory
-public class AnyRoutable: Routable {
+public class AnyRoutable: Routable, @unchecked Sendable {
+    //We are pretty sure that the class is Thread safe as it act as immutable as its property are private and declared as let.
+    //If that needs to be changed later we need to revisit the unchecked.
     
     private let base: (any Routable)
     private let equals: (any Routable) -> Bool
@@ -27,7 +29,7 @@ public class AnyRoutable: Routable {
     public func createView() -> some View {
         AnyView(base.createView())
     }
-    
+
     open func hash(into hasher: inout Hasher) {
         self.base.hash(into: &hasher)
     }
