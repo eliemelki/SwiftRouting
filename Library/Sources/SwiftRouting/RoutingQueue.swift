@@ -43,33 +43,6 @@ public actor RoutingQueue {
     public static let shared = StorageActor()
 }
 
-@StorageActor
-class T {
 
-    func u() async {
-        let queue = RoutingQueue()
-        let v = { @StorageActor in }
-        Task {
-            v()
-            await queue.execute{ @StorageActor in await self.updateUI() }
-        }
-        if #available(iOS 17.0, *) {
-            DispatchQueue.main.asyncUnsafe {
-                 self.updateUI()
-            }
-        } else {
-            // Fallback on earlier versions
-        }
-        
-        func updateUI() async {
-            
-        }
-    }
-
-    @MainActor
-    func updateUI() {
-        
-    }
-}
 
 
