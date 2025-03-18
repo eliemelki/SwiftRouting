@@ -10,7 +10,6 @@ import Foundation
 
 public typealias RoutingQueueOperation = () async -> Void
 
-typealias IsolatedClosure<each Input, Output> = ((isolated Actor?, repeat each Input) async throws -> Output)
 
 public actor RoutingQueue {
     private var operations: [Task<Void, Never>] = []
