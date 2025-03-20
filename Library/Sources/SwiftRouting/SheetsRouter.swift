@@ -23,8 +23,7 @@ public class SheetsRouter: ObservableObject {
     @Published public private(set) var placeholderSheet: SheetRouter = .init()
     public private(set) var queue: RoutingQueue = .init()
     
-    public init() {
-        
+    public init() async {
     }
 }
 
@@ -40,7 +39,7 @@ extension SheetsRouter {
     }
     
     private func hide(_ sheet: SheetRouter) async {
-        await queue.executeW {
+        await queue.execute { @MainActor in
             await sheet.hide()
         }
     }
@@ -72,11 +71,9 @@ extension SheetsRouter {
 extension SheetsRouter: SheetsCoordinator {
    
     public func show<T: Routable>(_ item: T, isFullScreen: Bool = false, onDismiss: SheetDismissHandler? = nil) async -> AnyRoutable? {
-        var result: AnyRoutable?
-        await queue.executeW { [weak self] in
-            result = await self?._show(item, isFullScreen:isFullScreen, onDismiss: onDismiss)
+        return await queue.execute { @MainActor [weak self] in
+            return await self?._show(item, isFullScreen:isFullScreen, onDismiss: onDismiss)
         }
-        return result
     }
     
     public func replace<T: Routable>(_ item: T, isFullScreen: Bool = false, onDismiss: SheetDismissHandler?) async -> AnyRoutable? {
@@ -95,7 +92,7 @@ extension SheetsRouter: SheetsCoordinator {
    
     
     public func hideAll() async {
-        for sheet in sheets {
+        for sheet in sheets.reversed() {
             await hide(sheet)
         }
     }

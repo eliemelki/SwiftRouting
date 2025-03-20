@@ -97,7 +97,7 @@ extension SheetRouter {
     
 
     public func hide() async {
-        await queue.executeW { 
+        await queue.execute { 
             await withCheckedContinuation { @MainActor continuation in
                 self._hide() {
                     continuation.resume()
