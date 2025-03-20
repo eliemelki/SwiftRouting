@@ -7,17 +7,7 @@
 
 import Foundation
 
-
 public typealias RoutingQueueOperation<T> = () async -> T
-protocol Waitable {
-    func waitForCompletion() async
-}
-
-extension Task: Waitable {
-    func waitForCompletion() async {
-        _ = try? await value
-    }
-}
 
 public actor RoutingQueue {
     private var operations: [Waitable] = []

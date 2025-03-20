@@ -11,16 +11,14 @@ import SwiftRouting
 @MainActor
 class AppCordinator: ObservableObject  {
     let sheetRouter = SheetsRouter()
-    let singleSheetRouter = SheetRouter()
+    weak var secondSheet: AnyRoutable?
     
     func showFirstSheet() {
         let view = RoutableFactory { [unowned self] in
             return TestView1(coordinator: self)
         }
-        Task {
-            await sheetRouter.show(view) {
-                print("dimiss First")
-            }
+        sheetRouter.show(view) {
+            print("dimiss First")
         }
     }
     
@@ -30,7 +28,7 @@ class AppCordinator: ObservableObject  {
         }
         
         Task {
-            await sheetRouter.show(view) {
+            secondSheet = await sheetRouter.show(view) {
                 print("dimiss Second")
                 
             }
@@ -42,7 +40,7 @@ class AppCordinator: ObservableObject  {
             return TestView2Replaced(coordinator: self)
         }
         Task {
-            await sheetRouter.replace(view) {
+            secondSheet = await sheetRouter.replace(view) {
                 print("dimiss second Replaced")
             }
         }
@@ -52,38 +50,31 @@ class AppCordinator: ObservableObject  {
         let view = RoutableFactory { [unowned self] in
             return TestView3(coordinator: self)
         }
-        Task {
-            await sheetRouter.show(view) {
-                print("dimiss Third")
-            }
+        sheetRouter.show(view) {
+            print("dimiss Third")
         }
     }
     
     func hideLast() {
-        Task {
-            await
-            sheetRouter.hide()
-            self.showSecondSheet()
-        }
+        
+        sheetRouter.hide()
+        self.showSecondSheet()
         
     }
     
     func backToFirst() {
-        //guard let secondSheet else { return }
-       // secondSheet.hide()
+        guard let secondSheet else { return }
+        sheetRouter.hide(router: secondSheet)
     }
     
     func hide() {
-        Task {
-            await
-            sheetRouter.hideAll()
-        }
+        sheetRouter.hideAll()
     }
 }
 
 struct ContentView: View {
     @StateObject var appCordinator = AppCordinator()
-   
+    
     var body: some View {
         VStack {
             SheetsRouterView(router: appCordinator.sheetRouter)
@@ -114,7 +105,7 @@ struct TestView1 : View {
                 coordinator.showSecondSheet()
             }
         }
-      
+        
     }
 }
 
@@ -130,7 +121,7 @@ struct TestView2 : View {
                 coordinator.replaceSecondSheet()
             }
         }
-       
+        
     }
 }
 
@@ -143,7 +134,7 @@ struct TestView2Replaced : View {
                 coordinator.showThirdSheet()
             }
         }
-       
+        
     }
 }
 
@@ -163,7 +154,7 @@ struct TestView3 : View {
                 coordinator.backToFirst()
             }
         }
-     
+        
     }
 }
 

@@ -8,17 +8,7 @@
 import SwiftUI
 import Combine
 
-@MainActor
-public protocol NavigationCoordinator {
-    
-    func setMainViewFactory<T: Routable>(_ factory: T)
-    
-    func push<T: Routable>(_ factory: T)
-    
-    func popLast()
-    
-    func popToRoot()
-}
+
 
 open class NavigationRouter: ObservableObject {
     

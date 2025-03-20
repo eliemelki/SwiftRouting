@@ -7,14 +7,7 @@
 
 import SwiftUI
 
-@MainActor
-public protocol SheetsCoordinator {
- 
-    func show<T: Routable>(_ item: T, isFullScreen: Bool, onDismiss: SheetDismissHandler?) async -> AnyRoutable?
-    func replace<T: Routable>(_ item: T, isFullScreen: Bool, onDismiss: SheetDismissHandler?) async -> AnyRoutable?
-    func hide() async
-    func hideAll() async
-}
+
 
 @MainActor
 public class SheetsRouter: ObservableObject {
@@ -23,7 +16,7 @@ public class SheetsRouter: ObservableObject {
     @Published public private(set) var placeholderSheet: SheetRouter = .init()
     public private(set) var queue: RoutingQueue = .init()
     
-    public init() async {
+    public init() {
     }
 }
 
@@ -69,7 +62,7 @@ extension SheetsRouter {
 }
 
 extension SheetsRouter: SheetsCoordinator {
-   
+    
     public func show<T: Routable>(_ item: T, isFullScreen: Bool = false, onDismiss: SheetDismissHandler? = nil) async -> AnyRoutable? {
         return await queue.execute { @MainActor [weak self] in
             return await self?._show(item, isFullScreen:isFullScreen, onDismiss: onDismiss)
@@ -89,14 +82,29 @@ extension SheetsRouter: SheetsCoordinator {
         await self.hide(last)
     }
     
-   
-    
     public func hideAll() async {
-        for sheet in sheets.reversed() {
-            await hide(sheet)
+        guard let sheet = sheets.first else {
+            return
         }
+        await hide(sheet)
     }
     
+    public func hide(index: Int) async {
+        guard index >= 0, index < self.sheets.count else {
+            return
+        }
+        
+        let sheet = sheets[index]
+        await hide(sheet)
+    }
+    
+    public func hide(router: AnyRoutable) async {
+        let index = self.sheets.firstIndex { $0.fullRoutable === router || $0.partialRoutable === router }
+        guard let index = index else {
+            return
+        }
+        await hide(index: index)
+    }
 }
 
 public struct SheetsRouterView: View {

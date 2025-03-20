@@ -13,14 +13,8 @@
 //
 import SwiftUI
 
-@MainActor
-public protocol SheetCoordinator {
-    @discardableResult
-    func showPartial<T: Routable>(_ routable:T, dismissHandler:  SheetDismissHandler?) async -> AnyRoutable
-    @discardableResult
-    func showFull<T: Routable>(_ routable:T, dismissHandler:  SheetDismissHandler?) async -> AnyRoutable
-    func hide() async
-}
+
+
 
 
 public typealias SheetDismissHandler = () -> ()
@@ -30,8 +24,8 @@ public class SheetRouter : ObservableObject, Identifiable {
     @Published private(set) var fullPreviousDismissHandler: SheetDismissHandler?
     @Published private(set) var partialPreviousDismissHandler: SheetDismissHandler?
     
-    @Published fileprivate var fullRoutable: AnyRoutable?
-    @Published fileprivate var partialRoutable: AnyRoutable?
+    @Published fileprivate(set) var fullRoutable: AnyRoutable?
+    @Published fileprivate(set) var partialRoutable: AnyRoutable?
     
     @Published fileprivate var dismissHandlerCompletion: SheetDismissHandler?
     
@@ -120,6 +114,7 @@ extension SheetRouter {
         }
     }
 }
+
 
 
 public struct SheetRouterView<Content: View> : View {
