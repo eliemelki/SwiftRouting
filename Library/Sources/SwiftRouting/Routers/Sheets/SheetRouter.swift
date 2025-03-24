@@ -24,7 +24,12 @@ public class SheetRouter : ObservableObject, Identifiable {
     @Published private(set) var fullPreviousDismissHandler: SheetDismissHandler?
     @Published private(set) var partialPreviousDismissHandler: SheetDismissHandler?
     
-    @Published fileprivate(set) var fullRoutable: AnyRoutable?
+    @Published fileprivate(set) var fullRoutable: AnyRoutable? { didSet {
+        if fullRoutable == nil {
+            self.dismissFullScreen()
+        }
+    }
+    }
     @Published fileprivate(set) var partialRoutable: AnyRoutable?
     
     @Published fileprivate var dismissHandlerCompletion: SheetDismissHandler?
@@ -59,7 +64,7 @@ extension SheetRouter {
     }
     
     fileprivate func dismissFullScreen() {
-       dismiss(routable: self.fullRoutable, dismissHandler: self.fullPreviousDismissHandler)
+        dismiss(routable: self.fullRoutable, dismissHandler: self.fullPreviousDismissHandler)
     }
     
     fileprivate func dismissPartialScreen() {
@@ -89,9 +94,9 @@ extension SheetRouter {
         return item
     }
     
-
+    
     public func hide() async {
-        await queue.execute { 
+        await queue.execute {
             await withCheckedContinuation { @MainActor continuation in
                 self._hide() {
                     continuation.resume()
@@ -118,7 +123,7 @@ extension SheetRouter {
 
 
 public struct SheetRouterView<Content: View> : View {
- 
+    
     @ObservedObject var router: SheetRouter
     var content: () -> Content
     

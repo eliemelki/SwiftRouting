@@ -12,7 +12,7 @@ public typealias RoutingQueueOperation<T> = () async -> T
 public actor RoutingQueue {
     private var operations: [Waitable] = []
     
-    private func _execute<T: Sendable>(operation: @escaping RoutingQueueOperation<T>) async -> T {
+    fileprivate func _execute<T: Sendable>(operation: @escaping RoutingQueueOperation<T>) async -> T {
         let last = operations.last
         
         let task = Task {
@@ -26,11 +26,10 @@ public actor RoutingQueue {
         return value
     }
     
-    func execute<T: Sendable>(isolation: isolated (any Actor)? = #isolation,_ operation: @escaping RoutingQueueOperation<T>) async -> T {
+   func execute<T: Sendable>(isolation: isolated (any Actor)? = #isolation,_ operation: @escaping RoutingQueueOperation<T>) async -> T {
         return await Task {
             let _ = isolation
             return await self._execute(operation: operation)
         }.value
     }
 }
-

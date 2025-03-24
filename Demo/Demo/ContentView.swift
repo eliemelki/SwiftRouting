@@ -58,7 +58,7 @@ class AppCordinator: ObservableObject  {
     func hideLast() {
         
         sheetRouter.hide()
-        self.showSecondSheet()
+        //self.showSecondSheet()
         
     }
     
