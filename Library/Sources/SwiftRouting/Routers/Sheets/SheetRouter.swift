@@ -24,12 +24,8 @@ public class SheetRouter : ObservableObject, Identifiable {
     @Published private(set) var fullPreviousDismissHandler: SheetDismissHandler?
     @Published private(set) var partialPreviousDismissHandler: SheetDismissHandler?
     
-    @Published fileprivate(set) var fullRoutable: AnyRoutable? { didSet {
-        if fullRoutable == nil {
-            self.dismissFullScreen()
-        }
-    }
-    }
+    @Published fileprivate(set) var fullRoutable: AnyRoutable?
+    
     @Published fileprivate(set) var partialRoutable: AnyRoutable?
     
     @Published fileprivate var dismissHandlerCompletion: SheetDismissHandler?
