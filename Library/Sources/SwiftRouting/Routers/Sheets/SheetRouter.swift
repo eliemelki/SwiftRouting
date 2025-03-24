@@ -14,15 +14,12 @@
 import SwiftUI
 
 
-
-
-
 public typealias SheetDismissHandler = () -> ()
 @MainActor
 public class SheetRouter : ObservableObject, Identifiable {
     
-    @Published private(set) var fullPreviousDismissHandler: SheetDismissHandler?
-    @Published private(set) var partialPreviousDismissHandler: SheetDismissHandler?
+    @Published private(set) var fullDismissHandler: SheetDismissHandler?
+    @Published private(set) var partialDismissHandler: SheetDismissHandler?
     
     @Published fileprivate(set) var fullRoutable: AnyRoutable?
     
@@ -34,9 +31,6 @@ public class SheetRouter : ObservableObject, Identifiable {
     
     fileprivate var queue: RoutingQueue = .init()
     
-    public func hasSheetDisplayed() -> Bool {
-        return fullRoutable != nil || partialRoutable != nil
-    }
     
     public init() {
         
@@ -48,6 +42,8 @@ extension SheetRouter {
     fileprivate func dismiss(routable: AnyRoutable?, dismissHandler: SheetDismissHandler?)  {
         defer {
             let handler = dismissHandlerCompletion
+            fullDismissHandler = nil
+            partialDismissHandler = nil
             dismissHandlerCompletion = nil
             handler?()
         }
@@ -59,12 +55,27 @@ extension SheetRouter {
         dismissHandler?()
     }
     
-    fileprivate func dismissFullScreen() {
-        dismiss(routable: self.fullRoutable, dismissHandler: self.fullPreviousDismissHandler)
+    func dismissFullScreen() {
+        dismiss(routable: self.fullRoutable, dismissHandler: self.fullDismissHandler)
     }
     
-    fileprivate func dismissPartialScreen() {
-        dismiss(routable: self.partialRoutable, dismissHandler: self.partialPreviousDismissHandler)
+    func dismissPartialScreen() {
+        dismiss(routable: self.partialRoutable, dismissHandler: self.partialDismissHandler)
+    }
+    
+    private func _hide(completion: @escaping SheetDismissHandler) {
+        
+        guard self.fullRoutable != nil || self.partialRoutable != nil else {
+            completion()
+            return
+        }
+        
+      
+        self.dismissHandlerCompletion = {
+            completion()
+        }
+        self.partialRoutable = nil
+        self.fullRoutable = nil
     }
 }
 
@@ -76,7 +87,7 @@ extension SheetRouter {
         let item = AnyRoutable(routable)
         await self.hide()
         self.partialRoutable = item
-        self.partialPreviousDismissHandler = dismissHandler
+        self.partialDismissHandler = dismissHandler
         
         return item
     }
@@ -86,7 +97,7 @@ extension SheetRouter {
         let item = AnyRoutable(routable)
         await self.hide()
         self.fullRoutable = item
-        self.fullPreviousDismissHandler = dismissHandler
+        self.fullDismissHandler = dismissHandler
         return item
     }
     
@@ -101,21 +112,12 @@ extension SheetRouter {
         }
     }
     
-    private func _hide(completion: @escaping SheetDismissHandler) {
-        
-        guard self.fullRoutable != nil || self.partialRoutable != nil else {
-            completion()
-            return
-        }
-        
-        self.partialRoutable = nil
-        self.fullRoutable = nil
-        self.dismissHandlerCompletion = {
-            completion()
-        }
+    public func hasSheetDisplayed() -> Bool {
+        return fullRoutable != nil || partialRoutable != nil
     }
+    
+   
 }
-
 
 
 public struct SheetRouterView<Content: View> : View {

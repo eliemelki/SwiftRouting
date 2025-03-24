@@ -12,6 +12,8 @@ public protocol SheetCoordinator {
     @discardableResult
     func showFull<T: Routable>(_ routable:T, dismissHandler:  SheetDismissHandler?) async -> AnyRoutable
     func hide() async
+    
+    func hasSheetDisplayed() -> Bool
 }
 
 @MainActor

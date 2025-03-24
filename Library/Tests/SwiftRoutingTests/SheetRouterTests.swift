@@ -17,20 +17,20 @@ let routable = RoutableFactory() {
 
 @MainActor
 @Test func testSheetRouterInitialState() async throws {
-    let sheetRouter = SheetRouter()
+    let sheetRouter = MockSheetRouter()
     #expect(!sheetRouter.hasSheetDisplayed())
 }
 
 @MainActor
 @Test func testSheetRouterFullShow() async throws {
-    let sheetRouter = SheetRouter()
+    let sheetRouter = MockSheetRouter()
     await sheetRouter.showFull(routable)
     sheetRouter.expectFull(routable)
 }
 
 @MainActor
 @Test func testSheetRouterPartialShow() async throws {
-    let sheetRouter = SheetRouter()
+    let sheetRouter = MockSheetRouter()
     await sheetRouter.showPartial(routable)
     sheetRouter.expectPartial(routable)
     
@@ -38,13 +38,47 @@ let routable = RoutableFactory() {
 
 @MainActor
 @Test func testSheetRouterMultipleShow() async throws {
-    let sheetRouter = SheetRouter()
+    let sheetRouter = MockSheetRouter()
     await sheetRouter.showPartial(routable)
     await sheetRouter.showFull(routable)
     sheetRouter.expectFull(routable)
 }
 
-extension SheetRouter {
+@MainActor
+@Test func testSheetDismissHandler() async throws {
+    var firstDismissCalled = false
+    var secondDismissCalled = false
+    var thirdDismissCalled = false
+    
+    let sheetRouter = MockSheetRouter()
+    await sheetRouter.showPartial(routable) {
+        firstDismissCalled = !firstDismissCalled
+    }
+    await sheetRouter.showFull(routable) {
+        secondDismissCalled = !secondDismissCalled
+    }
+    #expect(firstDismissCalled)
+    #expect(!secondDismissCalled)
+    #expect(!thirdDismissCalled)
+    
+    
+    await sheetRouter.showFull(routable) {
+        thirdDismissCalled = !thirdDismissCalled
+    }
+    
+    #expect(firstDismissCalled)
+    #expect(secondDismissCalled)
+    #expect(!thirdDismissCalled)
+    
+    await sheetRouter.hide()
+    #expect(firstDismissCalled)
+    #expect(secondDismissCalled)
+    #expect(thirdDismissCalled)
+    
+    #expect(!sheetRouter.hasSheetDisplayed())
+}
+
+extension MockSheetRouter {
     
     func expectFull<T: Routable>(_ routable: T) {
         let fullRoutable = self.fullRoutable
