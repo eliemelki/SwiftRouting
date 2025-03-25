@@ -95,7 +95,7 @@ extension SheetsRouter: SheetsCoordinator {
     
     public func hide(index: Int) async {
         let sheets = self.sheets
-        for i in index..<sheets.count {
+        for i in (index..<sheets.count).reversed() {
             let sheet = sheets[i]
             await hide(sheet)
         }
