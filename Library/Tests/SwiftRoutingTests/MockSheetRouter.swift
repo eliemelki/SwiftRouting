@@ -1,5 +1,5 @@
 //
-//  MockSheetRouter.swift
+//  MockSheetproxy.swift
 //  SwiftRouting
 //
 //  Created by Elie Melki on 24/03/2025.
@@ -8,68 +8,78 @@
 
 @testable import SwiftRouting
 import Combine
+import SwiftUI
+
+ struct MockSheetsRouterFactory : SheetsRouterFactory {
+    func instanceOfSheet() -> Sheet {
+        return MockSheetRouter()
+    }
+}
 
 @MainActor
-class MockSheetRouter {
-    private let router = SheetRouter()
+class MockSheetRouter: Sheet {
+    
+    let proxy = SheetRouter()
     var fullRoutableCancelable: AnyCancellable?
     var partialRoutableCancelable: AnyCancellable?
-    
-    var fullRoutable: AnyRoutable? {
-        return router.fullRoutable
-    }
-    
-    var partialRoutable: AnyRoutable? {
-        return router.partialRoutable
-    }
-
-    
+  
     init() {
         fullRoutableCancelable =
-        router
+        proxy
             .$fullRoutable
             .removeDuplicates()
             .dropFirst()
             .sink { [weak self] value in
                 if (value == nil) {
                     Task {
-                        self?.router.dismissFullScreen()
+                        self?.proxy.dismissFullScreen()
                     }
                 }
             }
         partialRoutableCancelable =
-        router
+        proxy
             .$partialRoutable
             .removeDuplicates()
             .dropFirst()
             .sink { [weak self] value in
                 if (value == nil) {
                     Task {
-                        self?.router.dismissPartialScreen()
+                        self?.proxy.dismissPartialScreen()
                     }
                 }
             }
     }
-}
-
-extension MockSheetRouter: SheetCoordinator {
-    @discardableResult
-    func showPartial<T: Routable>(_ routable:T, dismissHandler:  SheetDismissHandler? = nil) async -> AnyRoutable {
-        await router.showPartial(routable, dismissHandler: dismissHandler)
+    func isDisplaying(_ routable: SwiftRouting.AnyRoutable) -> Bool {
+        return proxy.isDisplaying(routable)
     }
     
     @discardableResult
-    func showFull<T: Routable>(_ routable:T, dismissHandler:  SheetDismissHandler? = nil) async -> AnyRoutable {
-        await router.showFull(routable, dismissHandler: dismissHandler)
+    func show<T: Routable>(_ routable:T, sheetType: SheetType = .partial, dismissHandler:  SheetDismissHandler? = nil) async -> AnyRoutable {
+        await proxy.show(routable, sheetType: sheetType, dismissHandler: dismissHandler)
     }
+   
     
     func hide() async {
-        
-        await router.hide()
-        
+        await proxy.hide()
     }
     
     public func hasSheetDisplayed() -> Bool {
-        return router.hasSheetDisplayed()
+        return proxy.hasSheetDisplayed()
+    }
+    
+    func sheetType() -> SwiftRouting.SheetType? {
+        proxy.sheetType()
+    }
+    
+    func dismissFullScreen() {
+        proxy.dismissFullScreen()
+    }
+    
+    func dismissPartialScreen() {
+        proxy.dismissPartialScreen()
+    }
+    
+    func createView<T>(content: @escaping () -> T) -> SwiftRouting.SheetRouterView<T> where T : View {
+        return proxy.createView(content: content)
     }
 }

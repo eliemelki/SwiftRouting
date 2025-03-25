@@ -11,7 +11,7 @@ import SwiftUI
 @testable import SwiftRouting
 
 @MainActor
-let routable = RoutableFactory() {
+let mockRoutable = RoutableFactory() {
     return Text("Hello")
 }
 
@@ -24,24 +24,24 @@ let routable = RoutableFactory() {
 @MainActor
 @Test func testSheetRouterFullShow() async throws {
     let sheetRouter = MockSheetRouter()
-    await sheetRouter.showFull(routable)
-    sheetRouter.expectFull(routable)
+    await sheetRouter.show(mockRoutable, sheetType: .fullScreen)
+    sheetRouter.expectFull(mockRoutable)
 }
 
 @MainActor
 @Test func testSheetRouterPartialShow() async throws {
     let sheetRouter = MockSheetRouter()
-    await sheetRouter.showPartial(routable)
-    sheetRouter.expectPartial(routable)
+    await sheetRouter.show(mockRoutable)
+    sheetRouter.expectPartial(mockRoutable)
     
 }
 
 @MainActor
 @Test func testSheetRouterMultipleShow() async throws {
     let sheetRouter = MockSheetRouter()
-    await sheetRouter.showPartial(routable)
-    await sheetRouter.showFull(routable)
-    sheetRouter.expectFull(routable)
+    await sheetRouter.show(mockRoutable)
+    await sheetRouter.show(mockRoutable, sheetType: .fullScreen)
+    sheetRouter.expectFull(mockRoutable)
 }
 
 @MainActor
@@ -51,10 +51,10 @@ let routable = RoutableFactory() {
     var thirdDismissCalled = false
     
     let sheetRouter = MockSheetRouter()
-    await sheetRouter.showPartial(routable) {
+    await sheetRouter.show(mockRoutable) {
         firstDismissCalled = !firstDismissCalled
     }
-    await sheetRouter.showFull(routable) {
+    await sheetRouter.show(mockRoutable, sheetType: .fullScreen) {
         secondDismissCalled = !secondDismissCalled
     }
     #expect(firstDismissCalled)
@@ -62,7 +62,7 @@ let routable = RoutableFactory() {
     #expect(!thirdDismissCalled)
     
     
-    await sheetRouter.showFull(routable) {
+    await sheetRouter.show(mockRoutable, sheetType: .fullScreen) {
         thirdDismissCalled = !thirdDismissCalled
     }
     
@@ -74,28 +74,29 @@ let routable = RoutableFactory() {
     #expect(firstDismissCalled)
     #expect(secondDismissCalled)
     #expect(thirdDismissCalled)
-    
+    #expect(sheetRouter.sheetType() == nil)
     #expect(!sheetRouter.hasSheetDisplayed())
 }
 
 extension MockSheetRouter {
     
     func expectFull<T: Routable>(_ routable: T) {
-        let fullRoutable = self.fullRoutable
+        let fullRoutable = self.proxy.fullRoutable
         #expect(fullRoutable != nil)
         #expect(AnyRoutable(routable) == fullRoutable)
+        #expect(self.sheetType() == .fullScreen)
         
-        let partialRoutable = self.partialRoutable
+        let partialRoutable = self.proxy.partialRoutable
         #expect(partialRoutable == nil)
         #expect(self.hasSheetDisplayed())
     }
     
     func expectPartial<T: Routable>(_ routable: T) {
-        let partialRoutable = self.partialRoutable
+        let partialRoutable = self.proxy.partialRoutable
         #expect(partialRoutable != nil)
         #expect(AnyRoutable(routable) == partialRoutable)
         
-        let fullRoutable = self.fullRoutable
+        let fullRoutable = self.proxy.fullRoutable
         #expect(fullRoutable == nil)
         #expect(self.hasSheetDisplayed())
     }

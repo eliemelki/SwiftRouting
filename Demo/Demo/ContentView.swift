@@ -64,7 +64,7 @@ class AppCordinator: ObservableObject  {
     
     func backToFirst() {
         guard let secondSheet else { return }
-        sheetRouter.hide(router: secondSheet)
+        sheetRouter.hide(routable: secondSheet)
     }
     
     func hide() {

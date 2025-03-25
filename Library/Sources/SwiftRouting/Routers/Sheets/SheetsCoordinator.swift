@@ -6,14 +6,16 @@
 //
 
 
+
 @MainActor
 public protocol SheetsCoordinator {
-    
-    func show<T: Routable>(_ item: T, isFullScreen: Bool, onDismiss: SheetDismissHandler?) async -> AnyRoutable?
-    func replace<T: Routable>(_ item: T, isFullScreen: Bool, onDismiss: SheetDismissHandler?) async -> AnyRoutable?
+    @discardableResult
+    func show<T: Routable>(_ item: T, sheetType: SheetType, onDismiss: SheetDismissHandler?) async -> AnyRoutable?
+    @discardableResult
+    func replace<T: Routable>(_ item: T, sheetType: SheetType, onDismiss: SheetDismissHandler?) async -> AnyRoutable?
     func hide() async
     func hide(index: Int) async
-    func hide(router: AnyRoutable) async
+    func hide(routable: AnyRoutable) async
     func hideAll() async
 }
 
@@ -21,14 +23,14 @@ public protocol SheetsCoordinator {
 @MainActor
 public extension SheetsCoordinator {
     
-    func show<T: Routable>(_ item: T, isFullScreen: Bool = false, onDismiss: SheetDismissHandler?) {
+    func show<T: Routable>(_ item: T, sheetType: SheetType = .partial, onDismiss: SheetDismissHandler?) {
         Task {
-            await self.show(item, isFullScreen: isFullScreen, onDismiss: onDismiss)
+            await self.show(item, sheetType: sheetType, onDismiss: onDismiss)
         }
     }
-    func replace<T: Routable>(_ item: T, isFullScreen: Bool, onDismiss: SheetDismissHandler?) {
+    func replace<T: Routable>(_ item: T, sheetType: SheetType = .partial, onDismiss: SheetDismissHandler?) {
         Task {
-            await self.replace(item, isFullScreen: isFullScreen, onDismiss: onDismiss)
+            await self.replace(item, sheetType: sheetType, onDismiss: onDismiss)
         }
     }
     func hide() {
@@ -41,9 +43,9 @@ public extension SheetsCoordinator {
             await self.hide(index: index)
         }
     }
-    func hide(router: AnyRoutable)  {
+    func hide(routable: AnyRoutable)  {
         Task {
-            await self.hide(router: router)
+            await self.hide(routable: routable)
         }
     }
     func hideAll() {
@@ -51,4 +53,10 @@ public extension SheetsCoordinator {
             await self.hideAll()
         }
     }
+}
+
+@MainActor
+protocol SheetDismissable {
+    func dismissFullScreen()
+    func dismissPartialScreen()
 }

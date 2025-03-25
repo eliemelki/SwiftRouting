@@ -38,6 +38,3 @@ public class AnyRoutable: Routable, @unchecked Sendable {
         lhs.equals(rhs.base)
     }
 }
-
-
-

@@ -13,24 +13,22 @@
 //
 import SwiftUI
 
+typealias Sheet = SheetCoordinator & SheetDismissable & SheetRouterViewFactory & AnyObject
 
 public typealias SheetDismissHandler = () -> ()
+
 @MainActor
-public class SheetRouter : ObservableObject, Identifiable {
+public class SheetRouter : ObservableObject {
     
-    @Published private(set) var fullDismissHandler: SheetDismissHandler?
-    @Published private(set) var partialDismissHandler: SheetDismissHandler?
+    @Published private var fullDismissHandler: SheetDismissHandler?
+    @Published private var partialDismissHandler: SheetDismissHandler?
     
-    @Published fileprivate(set) var fullRoutable: AnyRoutable?
+    @Published private var dismissHandlerCompletion: SheetDismissHandler?
     
-    @Published fileprivate(set) var partialRoutable: AnyRoutable?
+    @Published var fullRoutable: AnyRoutable?
+    @Published var partialRoutable: AnyRoutable?
     
-    @Published fileprivate var dismissHandlerCompletion: SheetDismissHandler?
-    
-    @Published fileprivate var pendingDismissHandlerCompletion: [SheetDismissHandler] = []
-    
-    fileprivate var queue: RoutingQueue = .init()
-    
+    private var queue: RoutingQueue = .init()
     
     public init() {
         
@@ -39,7 +37,7 @@ public class SheetRouter : ObservableObject, Identifiable {
 
 extension SheetRouter {
     
-    fileprivate func dismiss(routable: AnyRoutable?, dismissHandler: SheetDismissHandler?)  {
+    private func dismiss(routable: AnyRoutable?, dismissHandler: SheetDismissHandler?)  {
         defer {
             let handler = dismissHandlerCompletion
             fullDismissHandler = nil
@@ -55,22 +53,12 @@ extension SheetRouter {
         dismissHandler?()
     }
     
-    func dismissFullScreen() {
-        dismiss(routable: self.fullRoutable, dismissHandler: self.fullDismissHandler)
-    }
-    
-    func dismissPartialScreen() {
-        dismiss(routable: self.partialRoutable, dismissHandler: self.partialDismissHandler)
-    }
-    
     private func _hide(completion: @escaping SheetDismissHandler) {
         
         guard self.fullRoutable != nil || self.partialRoutable != nil else {
             completion()
             return
         }
-        
-      
         self.dismissHandlerCompletion = {
             completion()
         }
@@ -79,7 +67,27 @@ extension SheetRouter {
     }
 }
 
-extension SheetRouter {
+extension SheetRouter: SheetDismissable {
+    public func dismissFullScreen() {
+        dismiss(routable: self.fullRoutable, dismissHandler: self.fullDismissHandler)
+    }
+    
+    public func dismissPartialScreen() {
+        dismiss(routable: self.partialRoutable, dismissHandler: self.partialDismissHandler)
+    }
+}
+
+extension SheetRouter : SheetRouterViewFactory {
+    public func  createView() -> SheetRouterView<EmptyView> {
+        return SheetRouterView(router: self, content: { EmptyView() })
+    }
+    
+    func createView<T>(content: @escaping () -> T) -> SheetRouterView<T> where T : View {
+        return SheetRouterView(router: self, content: content)
+    }
+}
+
+extension SheetRouter: SheetCoordinator {
     
     //We dont allow to pop both FullScreen and Partial at the same time. iOS Default behaviour if fullsheet is present, partial sheet does not open until full sheet is closed. If partial sheet is opened and full sheet is required, The dismiss handler are not called properly
     @discardableResult
@@ -116,39 +124,28 @@ extension SheetRouter {
         return fullRoutable != nil || partialRoutable != nil
     }
     
-   
-}
-
-
-public struct SheetRouterView<Content: View> : View {
-    
-    @ObservedObject var router: SheetRouter
-    var content: () -> Content
-    
-    
-    public init(router: SheetRouter, content: @escaping () -> Content = { EmptyView() }) {
-        self.router = router
-        self.content = content
+    public func isDisplaying(_ routable: AnyRoutable) -> Bool {
+        return fullRoutable === routable || partialRoutable === routable
     }
     
-    public var body: some View {
-        VStack{
-            VStack{}
-                .fullScreenCover(item: $router.fullRoutable, onDismiss: self.router.dismissFullScreen) { routable in
-                    VStack {
-                        routable.createView()
-                        content()
-                    }
-                }
-            VStack{}
-                .sheet(item: $router.partialRoutable, onDismiss: self.router.dismissPartialScreen) { routable in
-                    VStack {
-                        routable.createView()
-                        content()
-                    }
-                }
+    @discardableResult
+    public func show<T: Routable>(_ routable:T, sheetType: SheetType, dismissHandler:  SheetDismissHandler?) async -> AnyRoutable {
+        switch sheetType {
+        case .fullScreen:
+            await self.showFull(routable, dismissHandler: dismissHandler)
+        case .partial:
+            await self.showPartial(routable, dismissHandler: dismissHandler)
         }
     }
     
-    
+    public func sheetType() -> SheetType? {
+        if fullRoutable != nil {
+            return .fullScreen
+        } else if partialRoutable != nil {
+            return .partial
+        }
+        return nil
+    }
 }
+
+
