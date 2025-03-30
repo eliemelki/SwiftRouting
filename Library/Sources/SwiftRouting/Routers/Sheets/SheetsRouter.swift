@@ -36,15 +36,39 @@ extension SheetsRouter {
         self.placeholderSheet = factory.instanceOfSheet()
     }
     
-    private func hide(_ sheet: Sheet) async {
-        await queue.execute { @MainActor in
-            await sheet.hide()
+    private func _hide(_ sheet: Sheet, animated: Bool) async {
+        print("hide")
+        await sheet.hide(animated: animated)
+    }
+    
+    private func _hide(animated: Bool = true) async {
+        await self._hide(index: self.sheets.count - 1, animated: animated)
+    }
+    
+    private func _hide(index: Int, animated: Bool = true) async {
+        let sheets = sheets
+//        await self.hide(sheets[index])
+        
+        guard index >= 0 else { return }
+        
+        await withTaskGroup(of: Void.self) {  group in
+      
+            for i in (index..<sheets.count).reversed() {
+                let clousure: @MainActor () async -> Void = {
+                    await self._hide(sheets[i], animated: animated)
+                }
+                group.addTask {
+                     await clousure()
+                }
+            }
+
+            for await _ in group {}
         }
     }
     
     @discardableResult
-    private func _show<T: Routable>(_ item: T, sheetType: SheetType = .partial, onDismiss: SheetDismissHandler? = nil) async -> AnyRoutable {
-        
+    private func _show<T: Routable>(_ item: T, sheetType: SheetType = .partial, animated: Bool, onDismiss: SheetDismissHandler? = nil) async -> AnyRoutable {
+        print("show")
         let currentSheet = self.placeholderSheet
         
         let placeHolderSheet: Sheet = self.factory.instanceOfSheet()
@@ -59,7 +83,7 @@ extension SheetsRouter {
         self.sheets.append(currentSheet)
         
         
-        return await currentSheet.show(item, sheetType: sheetType, dismissHandler: dismissHandler)
+        return await currentSheet.show(item, sheetType: sheetType, animated: animated, dismissHandler: dismissHandler)
         
     }
 }
@@ -67,46 +91,46 @@ extension SheetsRouter {
 extension SheetsRouter: SheetsCoordinator {
     
     @discardableResult
-    public func show<T: Routable>(_ item: T,  sheetType: SheetType = .partial, onDismiss: SheetDismissHandler? = nil) async -> AnyRoutable? {
+    public func show<T: Routable>(_ item: T,  sheetType: SheetType = .partial, animated: Bool = true, onDismiss: SheetDismissHandler? = nil) async -> AnyRoutable? {
         return await queue.execute { @MainActor [weak self] in
-            return await self?._show(item, sheetType:sheetType, onDismiss: onDismiss)
+            return await self?._show(item, sheetType:sheetType, animated: animated, onDismiss: onDismiss)
         }
     }
     
     @discardableResult
-    public func replace<T: Routable>(_ item: T, sheetType: SheetType = .partial, onDismiss: SheetDismissHandler?) async -> AnyRoutable? {
-        await self.hide()
-        return await self.show(item, sheetType:sheetType, onDismiss: onDismiss)
-    }
-    
-    public func hide() async {
-        guard let last = sheets.last else {
-            return
-        }
-        
-        await self.hide(last)
-    }
-    
-    public func hideAll() async {
-        for sheet in self.sheets.reversed() {
-            await hide(sheet)
+    public func replace<T: Routable>(_ item: T, sheetType: SheetType = .partial, animated: Bool = true, onDismiss: SheetDismissHandler?) async -> AnyRoutable? {
+        return await queue.execute { [weak self] in
+            await self?._hide(animated: animated)
+            return await self?._show(item, sheetType:sheetType, animated: animated, onDismiss: onDismiss)
         }
     }
     
-    public func hide(index: Int) async {
-        let sheets = self.sheets
-        for i in (index..<sheets.count).reversed() {
-            let sheet = sheets[i]
-            await hide(sheet)
+    public func hide(animated: Bool = true) async {
+        await queue.execute { [weak self] in
+            await self?._hide(animated: animated)
         }
     }
     
-    public func hide(routable: AnyRoutable) async {
-        let index = self.sheets.firstIndex { $0.isDisplaying(routable) }
-        guard let index else {
-            return
+    public func hideAll(animated: Bool = true) async {
+        await queue.execute { [weak self] in
+            await self?._hide(index: 0, animated: animated)
         }
-        await hide(index: index)
+    }
+    
+  
+    public func hide(index: Int, animated: Bool = true) async {
+        await queue.execute { [weak self] in
+            await self?._hide(index: index, animated: animated)
+        }
+    }
+    public func hide(routable: AnyRoutable,animated: Bool = true) async {
+        await queue.execute { [weak self] in
+            let index = self?.sheets.firstIndex { $0.isDisplaying(routable) }
+            guard let index else {
+                return
+            }
+            await self?._hide(index: index, animated: animated)
+        }
     }
 }
 

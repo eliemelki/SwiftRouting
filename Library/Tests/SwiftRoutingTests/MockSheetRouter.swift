@@ -54,13 +54,13 @@ class MockSheetRouter: Sheet {
     }
     
     @discardableResult
-    func show<T: Routable>(_ routable:T, sheetType: SheetType = .partial, dismissHandler:  SheetDismissHandler? = nil) async -> AnyRoutable {
-        await proxy.show(routable, sheetType: sheetType, dismissHandler: dismissHandler)
+    func show<T: Routable>(_ routable:T, sheetType: SheetType = .partial, animated: Bool = true, dismissHandler:  SheetDismissHandler? = nil) async -> AnyRoutable {
+        await proxy.show(routable, sheetType: sheetType, animated: animated, dismissHandler: dismissHandler)
     }
    
     
-    func hide() async {
-        await proxy.hide()
+    func hide(animated: Bool = true) async {
+        await proxy.hide(animated: animated)
     }
     
     public func hasSheetDisplayed() -> Bool {

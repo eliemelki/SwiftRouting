@@ -30,6 +30,8 @@ public struct SheetRouterView<Content: View> : View {
                         routable.createView()
                         content()
                     }
+                }.transaction {
+                    $0.disablesAnimations = !router.animated
                 }
             VStack{}
                 .sheet(item: $router.partialRoutable, onDismiss: self.router.dismissPartialScreen) { routable in
@@ -37,6 +39,9 @@ public struct SheetRouterView<Content: View> : View {
                         routable.createView()
                         content()
                     }
+                }
+                .transaction {
+                    $0.disablesAnimations = !router.animated
                 }
         }
     }

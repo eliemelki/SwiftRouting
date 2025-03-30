@@ -28,6 +28,8 @@ public class SheetRouter : ObservableObject {
     @Published var fullRoutable: AnyRoutable?
     @Published var partialRoutable: AnyRoutable?
     
+    @Published var animated: Bool = true
+   
     private var queue: RoutingQueue = .init()
     
     public init() {
@@ -53,8 +55,15 @@ extension SheetRouter {
         dismissHandler?()
     }
     
-    private func _hide(completion: @escaping SheetDismissHandler) {
-        
+    private func _hide() async {
+        await withCheckedContinuation { @MainActor [weak self] continuation in
+            self?._hide() {
+                continuation.resume()
+            }
+        }
+    }
+    
+    private func _hide( completion: @escaping SheetDismissHandler) {
         guard self.fullRoutable != nil || self.partialRoutable != nil else {
             completion()
             return
@@ -62,8 +71,33 @@ extension SheetRouter {
         self.dismissHandlerCompletion = {
             completion()
         }
+      
         self.partialRoutable = nil
         self.fullRoutable = nil
+    }
+    
+    @discardableResult
+    private func showPartial<T: Routable>(_ routable:T, animated: Bool, dismissHandler:  SheetDismissHandler? = nil) async -> AnyRoutable  {
+        let item = AnyRoutable(routable)
+        await queue.execute {
+            self.animated = animated
+            await self._hide()
+            self.partialRoutable = item
+            self.partialDismissHandler = dismissHandler
+        }
+        return item
+    }
+  
+    @discardableResult
+    private func showFull<T: Routable>(_ routable:T, animated: Bool, dismissHandler:  SheetDismissHandler? = nil) async -> AnyRoutable  {
+        let item = AnyRoutable(routable)
+        await queue.execute {
+            self.animated = animated
+            await self._hide()
+            self.fullRoutable = item
+            self.fullDismissHandler = dismissHandler
+        }
+        return item
     }
 }
 
@@ -89,34 +123,10 @@ extension SheetRouter : SheetRouterViewFactory {
 
 extension SheetRouter: SheetCoordinator {
     
-    //We dont allow to pop both FullScreen and Partial at the same time. iOS Default behaviour if fullsheet is present, partial sheet does not open until full sheet is closed. If partial sheet is opened and full sheet is required, The dismiss handler are not called properly
-    @discardableResult
-    public func showPartial<T: Routable>(_ routable:T, dismissHandler:  SheetDismissHandler? = nil) async -> AnyRoutable  {
-        let item = AnyRoutable(routable)
-        await self.hide()
-        self.partialRoutable = item
-        self.partialDismissHandler = dismissHandler
-        
-        return item
-    }
-    //We dont allow to pop both FullScreen and Partial at the same time. iOS Default behaviour if fullsheet is present, partial sheet does not open until full sheet is closed. If partial sheet is opened and full sheet is required, The dismiss handler are not called properly
-    @discardableResult
-    public func showFull<T: Routable>(_ routable:T, dismissHandler:  SheetDismissHandler? = nil) async -> AnyRoutable  {
-        let item = AnyRoutable(routable)
-        await self.hide()
-        self.fullRoutable = item
-        self.fullDismissHandler = dismissHandler
-        return item
-    }
-    
-    
-    public func hide() async {
-        await queue.execute {
-            await withCheckedContinuation { @MainActor continuation in
-                self._hide() {
-                    continuation.resume()
-                }
-            }
+    public func hide(animated: Bool) async {
+        await queue.execute { @MainActor [weak self] in
+            self?.animated = animated
+            await self?._hide()
         }
     }
     
@@ -129,12 +139,12 @@ extension SheetRouter: SheetCoordinator {
     }
     
     @discardableResult
-    public func show<T: Routable>(_ routable:T, sheetType: SheetType, dismissHandler:  SheetDismissHandler?) async -> AnyRoutable {
+    public func show<T: Routable>(_ routable:T, sheetType: SheetType, animated: Bool = true, dismissHandler:  SheetDismissHandler?) async -> AnyRoutable {
         switch sheetType {
         case .fullScreen:
-            await self.showFull(routable, dismissHandler: dismissHandler)
+            await self.showFull(routable, animated: animated, dismissHandler: dismissHandler)
         case .partial:
-            await self.showPartial(routable, dismissHandler: dismissHandler)
+            await self.showPartial(routable, animated: animated, dismissHandler: dismissHandler)
         }
     }
     

@@ -14,9 +14,9 @@ public enum SheetType {
 public protocol SheetCoordinator {
 
     @discardableResult
-    func show<T: Routable>(_ routable:T, sheetType: SheetType, dismissHandler:  SheetDismissHandler?) async -> AnyRoutable
+    func show<T: Routable>(_ routable:T, sheetType: SheetType, animated: Bool, dismissHandler:  SheetDismissHandler?) async -> AnyRoutable
     
-    func hide() async
+    func hide(animated: Bool) async
     
     func hasSheetDisplayed() -> Bool
     
@@ -29,15 +29,15 @@ public protocol SheetCoordinator {
 
 @MainActor
 public extension SheetCoordinator {
-    func show<T: Routable>(_ routable:T, sheetType: SheetType, dismissHandler:  SheetDismissHandler?) {
+    func show<T: Routable>(_ routable:T, sheetType: SheetType, animated: Bool = true, dismissHandler:  SheetDismissHandler?) {
         Task {
-            await self.show(routable, sheetType: sheetType, dismissHandler: dismissHandler)
+            await self.show(routable, sheetType: sheetType, animated: animated, dismissHandler: dismissHandler)
         }
     }
     
-    func hide() {
+    func hide(animated: Bool = true) {
         Task {
-            await self.hide()
+            await self.hide(animated: animated)
         }
     }
 }

@@ -10,38 +10,35 @@ import SwiftRouting
 @MainActor
 class SingleRouterTestViewModel : ObservableObject {
     let sheetRouter = SheetRouter()
-    
+    var value = 0
     func showSheet() {
         let view = RoutableFactory { [unowned self] in
             return SR2(coordinator: self)
         }
-        Task {
-            await sheetRouter.showPartial(view) {
-                print("dissmiss SR2")
-            }
+        value += 1
+        sheetRouter.show(view, sheetType: .partial, animated: value % 2 == 0) {
+            print("dissmiss SR2")
         }
     }
     
     func hideSheet2() {
-      
+        value += 1
+        sheetRouter.hide(animated: value % 2 == 0)
     }
     
     func replaceSheet() {
         let view = RoutableFactory { [unowned self] in
             return SR3(coordinator: self)
         }
-        
-        Task {
-            await sheetRouter.showFull(view) {
-                print("dissmiss SR3")
-            }
+        value += 1
+        sheetRouter.show(view, sheetType: .fullScreen,animated: value % 2 == 0) {
+            print("dissmiss SR3")
         }
     }
     
     func hideSHeet3() {
-        Task {
-            await sheetRouter.hide()
-        }
+        value += 1
+        sheetRouter.hide(animated: value % 2 == 0)
     }
 }
 
