@@ -68,7 +68,7 @@ class AppCordinator: ObservableObject  {
     }
     
     func hide() {
-        sheetRouter.hideAll()
+        sheetRouter.hideAll(animated: false)
     }
 }
 

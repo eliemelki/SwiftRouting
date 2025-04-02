@@ -55,8 +55,4 @@ public extension SheetsCoordinator {
     }
 }
 
-@MainActor
-protocol SheetDismissable {
-    func dismissFullScreen()
-    func dismissPartialScreen()
-}
+

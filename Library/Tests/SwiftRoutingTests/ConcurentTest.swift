@@ -59,7 +59,7 @@ public actor MyRoutingQueue {
 }
 
 
-@Test func testCOncurent() async throws {
+@Test func testConcurent() async throws {
     let queue = MyRoutingQueue()
     let closure1 = { @MainActor in
         let isolation = #isolation

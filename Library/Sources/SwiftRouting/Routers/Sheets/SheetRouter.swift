@@ -13,9 +13,15 @@
 //
 import SwiftUI
 
-typealias Sheet = SheetCoordinator & SheetDismissable & SheetRouterViewFactory & AnyObject
+@MainActor
+protocol SheetDismissable {
+    func dismissFullScreen()
+    func dismissPartialScreen()
+}
 
-public typealias SheetDismissHandler = () -> ()
+typealias Sheet = SheetCoordinator & SheetDismissable & SheetCoordinatorHelpers & SheetRouterViewFactory & AnyObject
+
+
 
 @MainActor
 public class SheetRouter : ObservableObject {
@@ -129,15 +135,7 @@ extension SheetRouter: SheetCoordinator {
             await self?._hide()
         }
     }
-    
-    public func hasSheetDisplayed() -> Bool {
-        return fullRoutable != nil || partialRoutable != nil
-    }
-    
-    public func isDisplaying(_ routable: AnyRoutable) -> Bool {
-        return fullRoutable === routable || partialRoutable === routable
-    }
-    
+   
     @discardableResult
     public func show<T: Routable>(_ routable:T, sheetType: SheetType, animated: Bool = true, dismissHandler:  SheetDismissHandler?) async -> AnyRoutable {
         switch sheetType {
@@ -147,6 +145,17 @@ extension SheetRouter: SheetCoordinator {
             await self.showPartial(routable, animated: animated, dismissHandler: dismissHandler)
         }
     }
+}
+
+extension SheetRouter : SheetCoordinatorHelpers {
+    public func hasSheetDisplayed() -> Bool {
+        return fullRoutable != nil || partialRoutable != nil
+    }
+    
+    public func isDisplaying(_ routable: AnyRoutable) -> Bool {
+        return fullRoutable === routable || partialRoutable === routable
+    }
+    
     
     public func sheetType() -> SheetType? {
         if fullRoutable != nil {
@@ -157,5 +166,3 @@ extension SheetRouter: SheetCoordinator {
         return nil
     }
 }
-
-

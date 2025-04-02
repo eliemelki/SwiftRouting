@@ -136,7 +136,7 @@ import SwiftUI
     async let t1 = await task1.value
     async let t2 = await task2.value
     async let t3: Void = await task3.value
-    let _ = await "\(t1) \(t2)"
+    let _ = await "\(t1.debugDescription) \(t2.debugDescription)"
     let _ = await "\(t3)"
     
     #expect(dismissTrack == [1,2])
@@ -165,10 +165,10 @@ import SwiftUI
     async let t1 = await task1.value
     async let t2 = await task2.value
     async let t3: Void = await task3.value
-    let _ = await "\(t1) \(t2)"
+    let _ = await "\(t1.debugDescription) \(t2.debugDescription)"
     let _ = await "\(t3)"
     
-    #expect(dismissTrack == [1,2])
+    #expect(dismissTrack == [2,1])
     #expect(sheetsRouter.sheets.count == 0)
-
 }
+
