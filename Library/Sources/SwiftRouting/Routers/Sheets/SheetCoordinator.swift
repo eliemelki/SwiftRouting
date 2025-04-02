@@ -18,7 +18,7 @@ public enum SheetType {
 // MARK: - SheetCoordinator
 public typealias SheetDismissHandler = () -> ()
 
-/// Provides a convenient way for to show hide different type of sheet
+/// Provides a convenient way to show hide a view as a sheet. You can show as full or partial.
 @MainActor
 public protocol SheetCoordinator {
 

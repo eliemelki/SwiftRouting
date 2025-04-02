@@ -125,6 +125,11 @@ extension SheetRouter : SheetRouterViewFactory {
 
 extension SheetRouter: SheetCoordinator {
     
+    /// Hide a sheet sheet sycnhronusly
+    /// - Parameters:
+    ///   - animated: animate sheet showing
+    ///
+    ///
     public func hide(animated: Bool) async {
         await queue.execute { @MainActor [weak self] in
             self?.animated = animated
@@ -132,6 +137,13 @@ extension SheetRouter: SheetCoordinator {
         }
     }
    
+    /// Show a sheet using async
+    /// - Parameters:
+    ///   - routable: Represent Routable object or any view that needs to be displayed. . check `Routable` for more info.
+    ///   - sheetType: how to show sheet wether full or partial.
+    ///   - animated: animate sheet showing
+    ///   - dismissHandler: callback when sheet is dismissed. This get called when automatically or manually hiding the sheet. Manually as per calling hide explicitly.
+    /// - Returns: An  `AnyRoutable` the internal earse typed object of routable created internally.
     @discardableResult
     public func show<T: Routable>(_ routable:T, sheetType: SheetType, animated: Bool = true, dismissHandler:  SheetDismissHandler?) async -> AnyRoutable {
         switch sheetType {

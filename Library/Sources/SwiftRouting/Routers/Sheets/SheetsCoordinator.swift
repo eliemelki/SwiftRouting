@@ -6,7 +6,7 @@
 //
 
 
-/// Provides a convenient way for to show hide different type of sheet and as many you want.
+/// Provides a convenient way to show hide as many views as a sheet.
 @MainActor
 public protocol SheetsCoordinator {
     
