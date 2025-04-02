@@ -7,6 +7,9 @@
 
 import SwiftUI
 
+///Implements SheetsCoordinator and allow for show and hide as many sheets/view
+///Basicall it internally has Multiple SheetCoordinator.
+///SheetsRouter allows to stack sheets on top of each other, without having to worry if an existing sheet is present or not. It also sycnrhonise all calls. In other words, if you try to call 2 sheets at the same time,It will present both sheets sequantially. 
 @MainActor
 public class SheetsRouter: ObservableObject {
    

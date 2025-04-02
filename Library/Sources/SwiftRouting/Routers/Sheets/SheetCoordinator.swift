@@ -24,7 +24,7 @@ public protocol SheetCoordinator {
 
     /// Show a sheet using async
     /// - Parameters:
-    ///   - routable: Represent Routable object or any view that needs to be displayed. See @E
+    ///   - routable: Represent Routable object or any view that needs to be displayed. . check `Routable` for more info.
     ///   - sheetType: how to show sheet wether full or partial.
     ///   - animated: animate sheet showing
     ///   - dismissHandler: callback when sheet is dismissed. This get called when automatically or manually hiding the sheet. Manually as per calling hide explicitly.
@@ -77,6 +77,7 @@ public extension SheetCoordinator {
 //This is some helper methods for internal use only.
 @MainActor
 protocol SheetCoordinatorHelpers {
+    
     func hasSheetDisplayed() -> Bool
     
     func isDisplaying(_ routable: AnyRoutable) -> Bool

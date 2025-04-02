@@ -5,12 +5,6 @@
 //  Created by Elie Melki on 14/03/2025.
 //
 
-//
-//  SheetRouter.swift
-//  SwiftRouting
-//
-//  Created by Elie Melki on 13/03/2025.
-//
 import SwiftUI
 
 @MainActor
@@ -22,7 +16,9 @@ protocol SheetDismissable {
 typealias Sheet = SheetCoordinator & SheetDismissable & SheetCoordinatorHelpers & SheetRouterViewFactory & AnyObject
 
 
-
+///Implements SheetCoordinator and allow for single show/hide a view
+///Basicall it internally add a placeholder for a fullScreenCover and a sheet.
+///SheetRouter allows only one sheet (regardless if its fullscreen or partial) at a time and it make sure all calls are synchronised. In other words, if you call show twice, the second call  will hide the existing and show the new one. The reason we synchronise is to avoid any UI issues and for proper dismiss handler calls. 
 @MainActor
 public class SheetRouter : ObservableObject {
     

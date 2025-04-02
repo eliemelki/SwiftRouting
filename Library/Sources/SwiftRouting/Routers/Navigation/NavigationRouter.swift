@@ -9,11 +9,13 @@ import SwiftUI
 import Combine
 
 
-
+///Implements NavigationCoordinator and allow for pushing and poping views.
+///It use internally Navigation stack and have a NavigationPath.
+///Whenever push or pop is called the router add/remove the routable to the path allowing to add push/pop the view.
 open class NavigationRouter: ObservableObject {
     
-    @Published fileprivate var paths: NavigationPath
-    @Published fileprivate var mainViewFactory: AnyRoutable?
+    @Published var paths: NavigationPath
+    @Published var main: AnyRoutable?
     
     public init(paths: NavigationPath = NavigationPath()) {
         self.paths = paths
@@ -25,12 +27,12 @@ open class NavigationRouter: ObservableObject {
 }
 
 extension NavigationRouter : NavigationCoordinator {
-    public  func setMainViewFactory<T: Routable>(_ factory: T) {
-        mainViewFactory = AnyRoutable(factory)
+    public  func setMain<T: Routable>(_ routable: T) {
+        main = AnyRoutable(routable)
     }
     
-    public func push<T: Routable>(_ factory: T) {
-        paths.append(AnyRoutable(factory))
+    public func push<T: Routable>(_ routable: T) {
+        paths.append(AnyRoutable(routable))
     }
     
     public func popLast() {
@@ -43,20 +45,4 @@ extension NavigationRouter : NavigationCoordinator {
 }
 
 
-public struct NavigationRouterView: View {
-    
-    @ObservedObject var router: NavigationRouter
-    
-    public init(router: NavigationRouter) {
-        _router = ObservedObject(wrappedValue: router)
-    }
-    
-    public var body: some View {
-        NavigationStack(path: $router.paths) {
-            router.mainViewFactory?.createView()
-                .navigationDestination(for: AnyRoutable.self) { router in
-                    router.createView()
-                }
-        }
-    }
-}
+
