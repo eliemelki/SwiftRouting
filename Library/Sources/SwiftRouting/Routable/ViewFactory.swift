@@ -15,7 +15,7 @@ import SwiftUI
 public protocol ViewFactory<Content> {
     associatedtype Content : View
  
-    /// Called from Coordinator to create a view
+    /// Called from Router to create a view
     /// - return a view.
     @MainActor
     @ViewBuilder

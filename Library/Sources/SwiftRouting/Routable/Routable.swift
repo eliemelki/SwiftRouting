@@ -7,7 +7,7 @@
 
 import SwiftUI
 /**
-    Routable, represents any screen/view that needs to be rendered/shown by a coordinator or a router.
+    Routable, represents any screen/view that needs to be rendered/shown by a router.
     Its basically a view factory and also needs to be identifiable and hashable.
  
  # Example #
@@ -39,7 +39,7 @@ public typealias Routable = ViewFactory & Hashable & Identifiable
 
 /**
     Routable Type Eraser.Acts also as a wrapper for Routable.
-    Coordinator usually accept a Routable, and convert to AnyRoutable for internal use, It also can returns AnyRoutable to caller. 
+    Routers accepts a Routable, and convert to AnyRoutable for internal use, It also can returns AnyRoutable to caller. 
  */
 public class AnyRoutable: Routable, @unchecked Sendable {
     //We are pretty sure that the class is Thread safe as it act as immutable as its property are private and declared as let.

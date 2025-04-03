@@ -37,7 +37,7 @@ public actor MyRoutingQueue {
     
     private var operations: [Waitable] = []
     
-    public func execute<T: Sendable>(@_inheritActorContext operation: @escaping RoutingQueueOperation<T>) async -> T {
+    public func execute<T: Sendable>(@_inheritActorContext operation: @escaping SerialQueueOperation<T>) async -> T {
         print("entered")
      
         for k in 0..<1 {

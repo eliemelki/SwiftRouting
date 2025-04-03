@@ -10,7 +10,7 @@ public struct NavigationRouterView: View {
     
     @ObservedObject var router: NavigationRouter
     
-    public init(router: NavigationRouter) {
+    init(router: NavigationRouter) {
         _router = ObservedObject(wrappedValue: router)
     }
     

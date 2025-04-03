@@ -8,7 +8,8 @@
 import Combine
 import SwiftUI
 
-//For internal use, allow a way to abstract the SheetCoordinator creating in SheetsRouter.
+typealias Sheet = SheetActions & SheetDismissable & SheetViewFactory & AnyObject
+
 @MainActor
 protocol SheetsRouterFactory {
     func instanceOfSheet() -> Sheet

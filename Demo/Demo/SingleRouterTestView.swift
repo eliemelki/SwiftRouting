@@ -47,7 +47,7 @@ struct SingleRouterTestView : View {
     
     var body: some View {
         VStack {
-            SheetRouterView(router: viewmodel.sheetRouter)
+            viewmodel.sheetRouter.createView()
             SR1(coordinator: viewmodel)
         }
     }

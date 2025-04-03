@@ -7,12 +7,12 @@
 
 import Foundation
 
-public typealias RoutingQueueOperation<T> = () async -> T
+public typealias SerialQueueOperation<T> = () async -> T
 
-public actor RoutingQueue {
+public actor SerialQueue {
     private var operations: [Waitable] = []
     
-    public func execute<T: Sendable>(@_inheritActorContext operation: @escaping RoutingQueueOperation<T>) async -> T {
+    public func execute<T: Sendable>(@_inheritActorContext operation: @escaping SerialQueueOperation<T>) async -> T {
         let last = operations.last
         
         let task = Task {

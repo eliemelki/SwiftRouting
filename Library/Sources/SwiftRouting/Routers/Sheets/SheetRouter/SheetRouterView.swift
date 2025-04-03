@@ -6,18 +6,14 @@
 //
 import SwiftUI
 
-@MainActor
-protocol SheetRouterViewFactory  {
-    func createView<T>(content: @escaping () -> T) -> SheetRouterView<T> where T: View
-}
+
 
 public struct SheetRouterView<Content: View> : View {
     
     @ObservedObject var router: SheetRouter
     var content: () -> Content
     
-    
-    public init(router: SheetRouter, content: @escaping () -> Content = { EmptyView() }) {
+    init(router: SheetRouter, content: @escaping () -> Content = { EmptyView() }) {
         self.router = router
         self.content = content
     }
