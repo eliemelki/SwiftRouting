@@ -72,7 +72,7 @@ We will be using Coordinator Pattern in our examples but you dont have to.
  
  ### SheetRouter
  
-For more have a look at [SheetsRouterDemo](Sources/SwiftRouting/Routers/SheetRouter/SheetRouterDemo.swift) 
+For more have a look at [SheetsRouterDemo](Sources/SwiftRouting/Routers/Sheets/SheetRouter/SheetRouterDemo.swift) 
 
 ```
 import SwiftUI
@@ -131,7 +131,7 @@ struct SheetView1 : View {
  
 ### SheetsRouter
 
-Take a look at [SheetsRouterDemo](Sources/SwiftRouting/Routers/SheetsRouter/SheetsRouterDemo.swift) 
+Take a look at [SheetsRouterDemo](Sources/SwiftRouting/Routers/Sheets/SheetsRouter/SheetsRouterDemo.swift) 
 
 ### Notes
 Be careful of retaining cycle when creating `Routable`. Basically our router implementations strong hold reference of routable instance.  
