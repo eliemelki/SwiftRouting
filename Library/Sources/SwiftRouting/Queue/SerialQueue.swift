@@ -27,7 +27,7 @@ public actor SerialQueue {
     }
     
 //  if you dont want to use @_inheritActorContext, you will need to uncomment the below and call it instead. The below could cause
-//  Data race in case it was called from a non isolated environment.
+//  data race in case it was called from a non isolated environment.
 //  Refer to this https://forums.swift.org/t/closure-isolation-inheritance-issues/78703 for more info
 //  func execute<T: Sendable>(isolation: isolated (any Actor)? = #isolation,_ operation: @escaping RoutingQueueOperation<T>) async -> T {
 //        return await Task {
