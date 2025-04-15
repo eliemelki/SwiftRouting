@@ -63,25 +63,80 @@ Example.
  
  ## Usage. 
  
- Now that we have a built up an understanding of the library we can now learn how to use it. let see how to use it. Its best to show by example. 
+ Now that we have a built up an understanding of the library we can now learn how to use it. It is best to show by example. 
  
- ```
-  struct TestView : View {
-     var body: some View {
-         VStack {
-             Text("Base")
-         }
-     }
- }
+We will be using Coordinator Pattern in our examples but you dont have to. 
+- Router: Knows exactly how to display a routable.
+- Coordinator: Abstract the navigation of routable. 
+   
+ 
+ ### SheetRouter
+ 
+
+```
+import SwiftUI
+
+@MainActor
+class Coordinator : ObservableObject {
+    let sheetRouter = SheetRouter()
+
+    func showSheet() {
+        let routable = RoutableFactory { [unowned self] in
+            //Notice unowned here. This is to prevent retain cycle. Will explain more below why can this happens.
+            //You can use weak, and return EmptyView if nil, but basically The parent is guaranted to be in memory when the child view is present.
+            return SheetView1(coordinator: self)
+        }
+        sheetRouter.show(routable, sheetType: .partial) {
+            print("dismissed SheetView1")
+        }
+    }
+    
+    func hideSheet() {
+        sheetRouter.hide(animated: true)
+    }
+}
+
+struct SheetRouterDemo : View {
+    @ObservedObject var coordinator: Coordinator = .init()
+    
+    var body: some View {
+        VStack {
+            //Note that we add our router view here.
+            coordinator.sheetRouter.createView()
+            VStack {
+                Text("Base")
+                Button("Show SheetView1") {
+                    coordinator.showSheet()
+                }
+            }
+        }
+    }
+}
+
+struct SheetView1 : View {
+    let coordinator: Coordinator
+    var body: some  View {
+        VStack {
+            Text("SheetView1")
+            Button("hide SheetView1") {
+                coordinator.hideSheet()
+            }
+        }
+    }
+}
+
  ```
  
 
+
+### Notes
 Be careful of retaining cycle when creating `Routable`. Basically our router implementations strong hold reference of routable instance.  
 
 If for example you have a parent Coordinator that has strong reference for our built in router, and you want to pass the parent Coordinator to your routable, in order to know how to navigate, make sure you weakly retain the parent coordinator reference in your routable, otherwise you will create a retaining cycle. 
+```
 ParentCoordinator (Hold strong reference)-> SheetRouter (Hold strong routable)-> Routable (Holds a strong reference of ParentCoordinator) eventually causing a retain cycle. 
+```
 
 An example will clarify Better. 
-
 
 
