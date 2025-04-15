@@ -19,7 +19,7 @@ Currently the Library provides 3 routers. Later on more can be added, but for no
 
 1- `SheetRouter`: Provides a convenient way to show hide a view as a sheet. You can show as full or partial. `SheetRouter` allows only one view (regardless if its fullscreen or partial) at a time and it make sure all calls are synchronised. In other words, if you call show twice, the second call will hide the existing and show the new one. The reason we synchronise is to avoid any UI issues and for proper dismiss handler calls.
 
-2- `SheetsRouter`: Provides a convenient way to show hide as many views as a sheet. `SheetsRouter` allows to stack views on top of each other presented as sheets, without having to worry if an existing view is present or not. It also sycnrhonise all calls. In other words, if you try to show 2 views at the same time,It will present both views sequantially.
+2- `SheetsRouter`: Provides a convenient way to show hide as many views as a sheet. `SheetsRouter` allows to stack views on top of each other presented as sheets, without having to worry if an existing sheet is present or not. It also sycnrhonise all calls. In other words, if you try to show 2 views at the same time, It will present both views sequantially.
  
 3- `NavigationRouter`: Provides a convenient way for to push pop views. 
 
@@ -72,6 +72,7 @@ We will be using Coordinator Pattern in our examples but you dont have to.
  
  ### SheetRouter
  
+For more have a look at SheetsRouterDemo[/Sources/SwiftRouting/Routers/SheetRouter/SheetRouterDemo] 
 
 ```
 import SwiftUI
@@ -127,7 +128,10 @@ struct SheetView1 : View {
 
  ```
  
+ 
+### SheetsRouter
 
+Take a look at SheetsRouterDemo[/Sources/SwiftRouting/Routers/SheetsRouter/SheetsRouterDemo] 
 
 ### Notes
 Be careful of retaining cycle when creating `Routable`. Basically our router implementations strong hold reference of routable instance.  
@@ -137,6 +141,5 @@ If for example you have a parent Coordinator that has strong reference for our b
 ParentCoordinator (Hold strong reference)-> SheetRouter (Hold strong routable)-> Routable (Holds a strong reference of ParentCoordinator) eventually causing a retain cycle. 
 ```
 
-An example will clarify Better. 
 
 
