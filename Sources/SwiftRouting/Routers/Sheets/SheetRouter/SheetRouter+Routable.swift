@@ -11,7 +11,7 @@ import SwiftUI
 
 @MainActor
 protocol SheetViewFactory  {
-    func createView<T>(content: @escaping () -> T) -> SheetRouterView<T> where T: View
+    func createView<T>(sheetContent: @escaping (AnyRoutable) -> T) -> SheetRouterViewModifier<T>
 }
 
 // MARK: - SheetRouter - SheetViewFactory, Routable
@@ -19,10 +19,14 @@ protocol SheetViewFactory  {
 extension SheetRouter : SheetViewFactory, Routable, HashableByType {
     ///Create SheetRouteView
     public func createView() -> SheetRouterView<EmptyView> {
-        return SheetRouterView(router: self, content: { EmptyView() })
+        return SheetRouterView(router: self)
     }
-    
-    func createView<T>(content: @escaping () -> T) -> SheetRouterView<T> where T : View {
-        return SheetRouterView(router: self, content: content)
+  
+    func createView<T>(sheetContent: @escaping (AnyRoutable) -> T) -> SheetRouterViewModifier<T> {
+        SheetRouterViewModifier(router: self,content: sheetContent)
     }
+   
 }
+
+
+

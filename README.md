@@ -74,61 +74,6 @@ We will be using Coordinator Pattern in our examples but you dont have to.
  
 For more have a look at [SheetsRouterDemo](Sources/SwiftRouting/Routers/Sheets/SheetRouter/SheetRouterDemo.swift) 
 
-```
-import SwiftUI
-
-@MainActor
-class Coordinator : ObservableObject {
-    let sheetRouter = SheetRouter()
-
-    func showSheet() {
-        let routable = RoutableFactory { [unowned self] in
-            //Notice unowned here. This is to prevent retain cycle. Will explain more below why can this happens.
-            //You can use weak, and return EmptyView if nil, but basically The parent is guaranted to be in memory when the child view is present.
-            return SheetView1(coordinator: self)
-        }
-        sheetRouter.show(routable, sheetType: .partial) {
-            print("dismissed SheetView1")
-        }
-    }
-    
-    func hideSheet() {
-        sheetRouter.hide(animated: true)
-    }
-}
-
-struct SheetRouterDemo : View {
-    @ObservedObject var coordinator: Coordinator = .init()
-    
-    var body: some View {
-        VStack {
-            //Note that we add our router view here.
-            coordinator.sheetRouter.createView()
-            VStack {
-                Text("Base")
-                Button("Show SheetView1") {
-                    coordinator.showSheet()
-                }
-            }
-        }
-    }
-}
-
-struct SheetView1 : View {
-    let coordinator: Coordinator
-    var body: some  View {
-        VStack {
-            Text("SheetView1")
-            Button("hide SheetView1") {
-                coordinator.hideSheet()
-            }
-        }
-    }
-}
-
- ```
- 
- 
 ### SheetsRouter
 
 Take a look at [SheetsRouterDemo](Sources/SwiftRouting/Routers/Sheets/SheetsRouter/SheetsRouterDemo.swift) 

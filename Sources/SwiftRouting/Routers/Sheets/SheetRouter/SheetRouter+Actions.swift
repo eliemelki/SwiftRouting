@@ -77,7 +77,7 @@ public extension SheetRouter {
     ///   - animated: animate sheet showing
     ///
     ///
-    func hide(animated: Bool)  {
+    func hide(animated: Bool = true)  {
         Task {
             await self.hide(animated: animated)
         }

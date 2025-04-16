@@ -9,16 +9,17 @@ import SwiftUI
 import SwiftRouting
 
 
+
 @MainActor
-class AppCordinator: ObservableObject  {
-    let sheetRouter = SheetsRouter()
+ class AppCordinator: ObservableObject  {
+    let sheetsRouter = SheetsRouter()
     weak var secondSheet: AnyRoutable?
     
     func showFirstSheet() {
         let view = RoutableFactory { [unowned self] in
             return TestView1(coordinator: self)
         }
-        sheetRouter.show(view) {
+        sheetsRouter.show(view) {
             print("dimiss First")
         }
     }
@@ -29,7 +30,7 @@ class AppCordinator: ObservableObject  {
         }
         
         Task {
-            secondSheet = await sheetRouter.show(view) {
+            secondSheet = await sheetsRouter.show(view) {
                 print("dimiss Second")
                 
             }
@@ -41,7 +42,7 @@ class AppCordinator: ObservableObject  {
             return TestView2Replaced(coordinator: self)
         }
         Task {
-            secondSheet = await sheetRouter.replace(view) {
+            secondSheet = await sheetsRouter.replace(view) {
                 print("dimiss second Replaced")
             }
         }
@@ -51,41 +52,37 @@ class AppCordinator: ObservableObject  {
         let view = RoutableFactory { [unowned self] in
             return TestView3(coordinator: self)
         }
-        sheetRouter.show(view) {
+        sheetsRouter.show(view) {
             print("dimiss Third")
         }
     }
     
     func hideLast() {
-        
-        sheetRouter.hide()
-        //self.showSecondSheet()
-        
+        sheetsRouter.hide()
     }
     
     func backToFirst() {
         
         guard let secondSheet else { return }
-        sheetRouter.hide(routable: secondSheet)
+        sheetsRouter.hide(routable: secondSheet)
     }
     
     func hide() {
-        sheetRouter.hideAll(animated: false)
+        sheetsRouter.hideAll(animated: true)
     }
 }
 
-struct ContentView: View {
+ struct ContentView: View {
     @StateObject var appCordinator = AppCordinator()
     
     var body: some View {
         VStack {
-           
-            TX(value: CustomWrapper.init(wrappedValue: 2))
-        }
+            TestView(coordinator: appCordinator)
+        }.sheetsRouterView(appCordinator.sheetsRouter)
     }
 }
 
-struct TestView : View {
+ struct TestView : View {
     let coordinator: AppCordinator
     var body: some View {
         VStack {
@@ -98,7 +95,7 @@ struct TestView : View {
     }
 }
 
-struct TestView1 : View {
+ struct TestView1 : View {
     let coordinator: AppCordinator
     var body: some  View {
         VStack {
@@ -111,7 +108,7 @@ struct TestView1 : View {
     }
 }
 
-struct TestView2 : View {
+ struct TestView2 : View {
     let coordinator: AppCordinator
     var body: some  View {
         VStack {
@@ -127,7 +124,7 @@ struct TestView2 : View {
     }
 }
 
-struct TestView2Replaced : View {
+ struct TestView2Replaced : View {
     let coordinator: AppCordinator
     var body: some  View {
         VStack {
@@ -140,7 +137,7 @@ struct TestView2Replaced : View {
     }
 }
 
-struct TestView3 : View {
+ struct TestView3 : View {
     let coordinator: AppCordinator
     var body: some  View {
         VStack {
@@ -158,16 +155,14 @@ struct TestView3 : View {
         }
         
     }
-    
 }
-
 
 #Preview {
     ContentView()
 }
 
 
-fileprivate struct TX : View {
+ struct TX : View {
     var value: CustomWrapper
     
     init(value: CustomWrapper) {

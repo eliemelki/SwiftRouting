@@ -7,38 +7,49 @@
 import SwiftUI
 
 
+public struct SheetRouterViewModifier<SheetContent: View> : ViewModifier {
+    
+    @ObservedObject var router: SheetRouter
+    var sheetContent: (AnyRoutable) -> SheetContent
+    
+    init(router: SheetRouter, content: @escaping (AnyRoutable) -> SheetContent = { r in r.createView() }) {
+        self.router = router
+        self.sheetContent = content
+    }
+    
+    public func body(content: Content) -> some View {
+        content
+            .fullScreenCover(item: $router.fullRoutable, onDismiss: self.router.dismissFullScreen) { routable in
+                sheetContent(routable)
+            }.transaction {
+                $0.disablesAnimations = !router.animated
+            }
+            .sheet(item: $router.partialRoutable, onDismiss: self.router.dismissPartialScreen) { routable in
+                sheetContent(routable)
+            }
+            .transaction {
+                $0.disablesAnimations = !router.animated
+            }
+    }
+}
+
+
+extension View {
+    func sheetRouterView(_ router: SheetRouter) -> some View {
+        modifier(SheetRouterViewModifier(router: router))
+    }
+}
+
 
 public struct SheetRouterView<Content: View> : View {
     
     @ObservedObject var router: SheetRouter
-    var content: () -> Content
     
-    init(router: SheetRouter, content: @escaping () -> Content = { EmptyView() }) {
+    init(router: SheetRouter) {
         self.router = router
-        self.content = content
     }
     
     public var body: some View {
-        VStack{
-            VStack{}
-                .fullScreenCover(item: $router.fullRoutable, onDismiss: self.router.dismissFullScreen) { routable in
-                    VStack {
-                        routable.createView()
-                        content()
-                    }
-                }.transaction {
-                    $0.disablesAnimations = !router.animated
-                }
-            VStack{}
-                .sheet(item: $router.partialRoutable, onDismiss: self.router.dismissPartialScreen) { routable in
-                    VStack {
-                        routable.createView()
-                        content()
-                    }
-                }
-                .transaction {
-                    $0.disablesAnimations = !router.animated
-                }
-        }
+        VStack{}.sheetRouterView(router)
     }
 }

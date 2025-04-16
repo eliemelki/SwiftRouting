@@ -6,19 +6,18 @@
 //
 
 import SwiftUI
-import SwiftRouting
 
 
 @MainActor
 fileprivate class AppCordinator: ObservableObject  {
-    let sheetRouter = SheetsRouter()
+    let sheetsRouter = SheetsRouter()
     weak var secondSheet: AnyRoutable?
     
     func showFirstSheet() {
         let view = RoutableFactory { [unowned self] in
             return TestView1(coordinator: self)
         }
-        sheetRouter.show(view) {
+        sheetsRouter.show(view) {
             print("dimiss First")
         }
     }
@@ -29,7 +28,7 @@ fileprivate class AppCordinator: ObservableObject  {
         }
         
         Task {
-            secondSheet = await sheetRouter.show(view) {
+            secondSheet = await sheetsRouter.show(view) {
                 print("dimiss Second")
                 
             }
@@ -41,7 +40,7 @@ fileprivate class AppCordinator: ObservableObject  {
             return TestView2Replaced(coordinator: self)
         }
         Task {
-            secondSheet = await sheetRouter.replace(view) {
+            secondSheet = await sheetsRouter.replace(view) {
                 print("dimiss second Replaced")
             }
         }
@@ -51,26 +50,23 @@ fileprivate class AppCordinator: ObservableObject  {
         let view = RoutableFactory { [unowned self] in
             return TestView3(coordinator: self)
         }
-        sheetRouter.show(view) {
+        sheetsRouter.show(view) {
             print("dimiss Third")
         }
     }
     
     func hideLast() {
-        
-        sheetRouter.hide()
-        //self.showSecondSheet()
-        
+        sheetsRouter.hide()
     }
     
     func backToFirst() {
         
         guard let secondSheet else { return }
-        sheetRouter.hide(routable: secondSheet)
+        sheetsRouter.hide(routable: secondSheet)
     }
     
     func hide() {
-        sheetRouter.hideAll(animated: false)
+        sheetsRouter.hideAll(animated: true)
     }
 }
 
@@ -79,9 +75,9 @@ fileprivate struct ContentView: View {
     
     var body: some View {
         VStack {
-            appCordinator.sheetRouter.createView()
             TestView(coordinator: appCordinator)
         }
+        .sheetsRouterView(appCordinator.sheetsRouter)
     }
 }
 

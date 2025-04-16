@@ -10,6 +10,7 @@ import SwiftUI
 
 typealias Sheet = SheetActions & SheetDismissable & SheetViewFactory & AnyObject
 
+
 @MainActor
 protocol SheetsRouterFactory {
     func instanceOfSheet() -> Sheet

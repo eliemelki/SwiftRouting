@@ -12,7 +12,7 @@ import SwiftUI
 
 @MainActor
 public class SheetsRouter: ObservableObject {
-   
+    
     @Published var sheets: [Sheet] = []
     @Published var placeholderSheet: Sheet
     public private(set) var queue: SerialQueue = .init()
@@ -40,8 +40,7 @@ extension SheetsRouter {
     }
     
     func _hide(_ sheet: Sheet, animated: Bool) async {
-        print("hide")
-        await sheet.hide(animated: animated)
+       await sheet.hide(animated: animated)
     }
     
     func _hide(animated: Bool = true) async {
@@ -49,30 +48,32 @@ extension SheetsRouter {
     }
     
     func _hide(index: Int, animated: Bool = true) async {
-        let sheets = sheets
-//        await self.hide(sheets[index])
-        
-        guard index >= 0 else { return }
-        
-        await withTaskGroup(of: Void.self) {  group in
-      
-            for i in (index..<sheets.count).reversed() {
-                let clousure: @MainActor () async -> Void = {
-                    await self._hide(sheets[i], animated: animated)
+        if Test.isRunningTests() {
+            //Do We want to hide them one by one?! Thats why for now only run for unit test.
+            guard index >= 0 else { return }
+            
+            await withTaskGroup(of: Void.self) {  group in
+                
+                for i in (index..<sheets.count).reversed() {
+                    let clousure: @MainActor () async -> Void = {
+                        await self._hide(self.sheets[i], animated: animated)
+                    }
+                    group.addTask {
+                        await clousure()
+                    }
                 }
-                group.addTask {
-                     await clousure()
-                }
+                
+                for await _ in group {}
             }
-
-            for await _ in group {}
+        }else {
+            let sheets = sheets
+            await self._hide(sheets[index], animated: animated)
         }
     }
     
     @discardableResult
     
     func _show<T: Routable>(_ item: T, sheetType: SheetType = .partial, animated: Bool, onDismiss: SheetDismissHandler? = nil) async -> AnyRoutable {
-        print("show")
         let currentSheet = self.placeholderSheet
         
         let placeHolderSheet: Sheet = self.factory.instanceOfSheet()

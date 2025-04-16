@@ -18,7 +18,7 @@ import SwiftUI
 
 @MainActor
 class MockSheetRouter: Sheet {
-    
+  
     let proxy = SheetRouter()
     var fullRoutableCancelable: AnyCancellable?
     var partialRoutableCancelable: AnyCancellable?
@@ -78,8 +78,9 @@ class MockSheetRouter: Sheet {
     func dismissPartialScreen() {
         proxy.dismissPartialScreen()
     }
+   
     
-    func createView<T>(content: @escaping () -> T) -> SwiftRouting.SheetRouterView<T> where T : View {
-        return proxy.createView(content: content)
+    func createView<T>(sheetContent: @escaping (SwiftRouting.AnyRoutable) -> T) -> SwiftRouting.SheetRouterViewModifier<T> where T : View {
+        return proxy.createView(sheetContent: sheetContent)
     }
 }

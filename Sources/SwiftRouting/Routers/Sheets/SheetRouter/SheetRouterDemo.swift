@@ -24,7 +24,8 @@ fileprivate class Coordinator : ObservableObject {
     
     func hideSheet1() {
         value += 1
-        sheetRouter.hide(animated: value % 2 == 0)
+        //sheetRouter.hide(animated: value % 2 == 0)
+        sheetRouter.hide()
     }
     
     func replaceSheet1BySheet2() {
@@ -32,14 +33,18 @@ fileprivate class Coordinator : ObservableObject {
             return SheetView2(coordinator: self)
         }
         value += 1
-        sheetRouter.show(routable, sheetType: .fullScreen,animated: value % 2 == 0) {
+//        sheetRouter.show(routable, sheetType: .fullScreen,animated: value % 2 == 0) {
+//            print("dismiss SheetView2")
+//        }
+        sheetRouter.show(routable, sheetType: .fullScreen) {
             print("dismiss SheetView2")
         }
     }
     
     func hideSheet2() {
         value += 1
-        sheetRouter.hide(animated: value % 2 == 0)
+        //sheetRouter.hide(animated: value % 2 == 0)
+        sheetRouter.hide()
     }
 }
 
@@ -48,9 +53,8 @@ fileprivate struct SheetRouterDemo : View {
     
     var body: some View {
         VStack {
-            coordinator.sheetRouter.createView()
             SheetBase(coordinator: coordinator)
-        }
+        }.sheetRouterView(coordinator.sheetRouter)
     }
 }
 
