@@ -78,6 +78,11 @@ Have a look at [SheetRouterDemo](Sources/SwiftRouting/Routers/Sheets/SheetRouter
 
 Have a look at [SheetsRouterDemo](Sources/SwiftRouting/Routers/Sheets/SheetsRouter/SheetsRouterDemo.swift) 
 
+### NavigationRouter
+
+Have a look at [NavigationRouterDemo](Sources/SwiftRouting/Routers/Navigation/NavigationRouterDemo.swift) 
+
+
 ### Notes
 Be careful of retaining cycle when creating `Routable`. Basically our router implementations strong hold reference of routable instance.  
 
