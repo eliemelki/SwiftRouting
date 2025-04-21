@@ -7,25 +7,23 @@
 import SwiftUI
 
 
-public struct SheetRouterViewModifier<SheetContent: View> : ViewModifier {
+public struct SheetRouterViewModifier : ViewModifier {
     
     @ObservedObject var router: SheetRouter
-    var sheetContent: (AnyRoutable) -> SheetContent
     
-    init(router: SheetRouter, content: @escaping (AnyRoutable) -> SheetContent = { r in r.createView() }) {
+    init(router: SheetRouter) {
         self.router = router
-        self.sheetContent = content
     }
     
     public func body(content: Content) -> some View {
         content
             .fullScreenCover(item: $router.fullRoutable, onDismiss: self.router.dismissFullScreen) { routable in
-                sheetContent(routable)
+                routable.createView()
             }.transaction {
                 $0.disablesAnimations = !router.animated
             }
             .sheet(item: $router.partialRoutable, onDismiss: self.router.dismissPartialScreen) { routable in
-                sheetContent(routable)
+                routable.createView()
             }
             .transaction {
                 $0.disablesAnimations = !router.animated
@@ -40,8 +38,7 @@ extension View {
     }
 }
 
-
-public struct SheetRouterView<Content: View> : View {
+public struct SheetRouterView : View {
     
     @ObservedObject var router: SheetRouter
     

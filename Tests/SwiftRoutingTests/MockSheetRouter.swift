@@ -80,7 +80,7 @@ class MockSheetRouter: Sheet {
     }
    
     
-    func createView<T>(sheetContent: @escaping (SwiftRouting.AnyRoutable) -> T) -> SwiftRouting.SheetRouterViewModifier<T> where T : View {
+    func createView<T>(sheetContent: @escaping (SwiftRouting.AnyRoutable) -> T) -> SwiftRouting.NestedSheetRouterViewModifier<T> where T : View {
         return proxy.createView(sheetContent: sheetContent)
     }
 }

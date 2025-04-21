@@ -54,3 +54,30 @@ public struct SheetsRouterView: View {
         VStack{}.buildSheetsFor(sheets: router.sheets + [router.placeholderSheet])
     }
 }
+
+
+struct NestedSheetRouterViewModifier<SheetContent: View> : ViewModifier {
+    
+    @ObservedObject var router: SheetRouter
+    var sheetContent: (AnyRoutable) -> SheetContent
+    
+    init(router: SheetRouter, content: @escaping (AnyRoutable) -> SheetContent = { r in r.createView() }) {
+        self.router = router
+        self.sheetContent = content
+    }
+    
+    public func body(content: Content) -> some View {
+        content
+            .fullScreenCover(item: $router.fullRoutable, onDismiss: self.router.dismissFullScreen) { routable in
+                sheetContent(routable)
+            }.transaction {
+                $0.disablesAnimations = !router.animated
+            }
+            .sheet(item: $router.partialRoutable, onDismiss: self.router.dismissPartialScreen) { routable in
+                sheetContent(routable)
+            }
+            .transaction {
+                $0.disablesAnimations = !router.animated
+            }
+    }
+}

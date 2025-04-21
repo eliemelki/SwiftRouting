@@ -22,3 +22,16 @@ struct DefaultSheetsRouterFactory: SheetsRouterFactory {
     }
 }
 
+
+// MARK: - SheetViewFactory
+
+@MainActor
+protocol SheetViewFactory  {
+    func createView<T>(sheetContent: @escaping (AnyRoutable) -> T) -> NestedSheetRouterViewModifier<T>
+}
+
+extension SheetRouter : SheetViewFactory {
+    func createView<T>(sheetContent: @escaping (AnyRoutable) -> T) -> NestedSheetRouterViewModifier<T> {
+        NestedSheetRouterViewModifier(router: self,content: sheetContent)
+    }
+}
