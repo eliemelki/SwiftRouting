@@ -13,10 +13,10 @@ import Combine
 ///Whenever push or pop is called the router add/remove the routable to the path allowing to add push/pop the view.
 public class NavigationRouter: ObservableObject {
     
-    @Published var paths: NavigationPath
+    @Published var paths: [AnyRoutable]
     @Published var main: AnyRoutable?
     
-    public init(paths: NavigationPath = NavigationPath()) {
-        self.paths = paths
+    public init() {
+        self.paths = []
     }
 }

@@ -9,7 +9,7 @@ class NavigationCoordinator :
     SecondCoordinator,
     NavigationSheetCoordinator
 {
-
+    
     let router = NavigationRouter()
     let sheetsRouter = SheetsRouter()
     
@@ -25,11 +25,24 @@ class NavigationCoordinator :
         
     }
     
+    func dimissFirst() {
+        self.router.popLast()
+    }
+    
     func pushFirst() {
         let routable = RoutableFactory { [unowned self] in
             return NavigationFirstView(coordinator: self)
+                .navigationBarBackButtonHidden(true)
+                .toolbar {
+                    ToolbarItem(placement: .topBarLeading) {
+                        Button(action: {
+                            self.dimissFirst()
+                        }) {
+                            Label("Back", systemImage: "arrow.left.circle")
+                        }
+                    }
+                }
         }
-        
         router.push(routable)
     }
     
@@ -89,7 +102,11 @@ fileprivate struct NavigationMain : View {
         VStack {
             Text("Main")
             Button("Push First") {
-                coordinator.pushFirst()
+                var transaction = Transaction(animation: .none)
+                transaction.disablesAnimations = true
+                withTransaction(transaction) {
+                    coordinator.pushFirst()
+                }
             }
         }
     }
@@ -111,7 +128,11 @@ fileprivate struct NavigationFirstView : View {
             }
             
             Button("Pop First") {
-                coordinator.popFirst()
+                var transaction = Transaction(animation: .none)
+                transaction.disablesAnimations = true
+                withTransaction(transaction) {
+                    coordinator.popFirst()
+                }
             }
         }
         

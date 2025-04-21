@@ -17,8 +17,8 @@ public struct NavigationRouterView: View {
     public var body: some View {
         NavigationStack(path: $router.paths) {
             router.main?.createView()
-                .navigationDestination(for: AnyRoutable.self) { router in
-                    router.createView()
+                .navigationDestination(for: AnyRoutable.self) { routable in
+                    routable.createView()
                 }
         }
     }
