@@ -9,7 +9,7 @@ import SwiftUI
 
 
 @MainActor
-fileprivate class AppCordinator: ObservableObject  {
+class SheersCordinator: ObservableObject  {
     let sheetsRouter = SheetsRouter()
     weak var secondSheet: AnyRoutable?
     
@@ -70,8 +70,8 @@ fileprivate class AppCordinator: ObservableObject  {
     }
 }
 
-fileprivate struct ContentView: View {
-    @StateObject var appCordinator = AppCordinator()
+struct SheetsDemoView: View {
+    @StateObject var appCordinator = SheersCordinator()
     
     var body: some View {
         VStack {
@@ -82,7 +82,7 @@ fileprivate struct ContentView: View {
 }
 
 fileprivate struct TestView : View {
-    let coordinator: AppCordinator
+    let coordinator: SheersCordinator
     var body: some View {
         VStack {
             Text("Base")
@@ -95,7 +95,7 @@ fileprivate struct TestView : View {
 }
 
 fileprivate struct TestView1 : View {
-    let coordinator: AppCordinator
+    let coordinator: SheersCordinator
     var body: some  View {
         VStack {
             Text("Sheet 1")
@@ -108,7 +108,7 @@ fileprivate struct TestView1 : View {
 }
 
 fileprivate struct TestView2 : View {
-    let coordinator: AppCordinator
+    let coordinator: SheersCordinator
     var body: some  View {
         VStack {
             Text("Sheet 2")
@@ -124,7 +124,7 @@ fileprivate struct TestView2 : View {
 }
 
 fileprivate struct TestView2Replaced : View {
-    let coordinator: AppCordinator
+    let coordinator: SheersCordinator
     var body: some  View {
         VStack {
             Text("Sheet 2 Replaced")
@@ -137,7 +137,7 @@ fileprivate struct TestView2Replaced : View {
 }
 
 fileprivate struct TestView3 : View {
-    let coordinator: AppCordinator
+    let coordinator: SheersCordinator
     var body: some  View {
         VStack {
             Text("Sheet 3")
@@ -157,5 +157,5 @@ fileprivate struct TestView3 : View {
 }
 
 #Preview {
-    ContentView()
+    SheetsDemoView()
 }

@@ -115,14 +115,14 @@ extension SheetsRouter: SheetsActions {
 public extension SheetsRouter {
     
     ///Same as show(...) async yet it doesnt needs an await
-    func show<T: Routable>(_ routable: T, sheetType: SheetType = .partial, animated: Bool = true, onDismiss: SheetDismissHandler?) {
+    func show<T: Routable>(_ routable: T, sheetType: SheetType = .partial, animated: Bool = true, onDismiss: SheetDismissHandler? = nil) {
         Task {
             await self.show(routable, sheetType: sheetType, animated: animated, onDismiss: onDismiss)
         }
     }
     
     ///Same as replace(...) async yet it doesnt needs an await
-    func replace<T: Routable>(_ routable: T, sheetType: SheetType = .partial, animated: Bool = true, onDismiss: SheetDismissHandler?) {
+    func replace<T: Routable>(_ routable: T, sheetType: SheetType = .partial, animated: Bool = true, onDismiss: SheetDismissHandler? = nil) {
         Task {
             await self.replace(routable, sheetType: sheetType, animated: animated, onDismiss: onDismiss)
         }

@@ -8,7 +8,7 @@
 import SwiftUI
 
 @MainActor
-fileprivate class Coordinator : ObservableObject {
+class SheetCoordinator : ObservableObject {
     let sheetRouter = SheetRouter()
     
     var value = 0
@@ -48,8 +48,8 @@ fileprivate class Coordinator : ObservableObject {
     }
 }
 
-fileprivate struct SheetRouterDemo : View {
-    @ObservedObject var coordinator: Coordinator = .init()
+struct SheetDemoView : View {
+    @ObservedObject var coordinator: SheetCoordinator = .init()
     
     var body: some View {
         VStack {
@@ -59,7 +59,7 @@ fileprivate struct SheetRouterDemo : View {
 }
 
 fileprivate struct SheetBase : View {
-    let coordinator: Coordinator
+    let coordinator: SheetCoordinator
     var body: some View {
         VStack {
             Text("Base")
@@ -71,7 +71,7 @@ fileprivate struct SheetBase : View {
 }
 
 fileprivate struct SheetView1 : View {
-    let coordinator: Coordinator
+    let coordinator: SheetCoordinator
     var body: some  View {
         VStack {
             Text("SheetView1")
@@ -88,7 +88,7 @@ fileprivate struct SheetView1 : View {
 }
 
 fileprivate struct SheetView2 : View {
-    let coordinator: Coordinator
+    let coordinator: SheetCoordinator
     var body: some  View {
         VStack {
             Text("SheetView2")
@@ -100,7 +100,9 @@ fileprivate struct SheetView2 : View {
     }
 }
 
+
+
 #Preview {
-    SheetRouterDemo()
+    SheetDemoView()
 }
 
