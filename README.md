@@ -72,11 +72,11 @@ We will be using Coordinator Pattern in our examples but you dont have to.
  
  ### SheetRouter
  
-For more have a look at [SheetsRouterDemo](Sources/SwiftRouting/Routers/Sheets/SheetRouter/SheetRouterDemo.swift) 
+Have a look at [SheetRouterDemo](Sources/SwiftRouting/Routers/Sheets/SheetRouter/SheetRouterDemo.swift) 
 
 ### SheetsRouter
 
-Take a look at [SheetsRouterDemo](Sources/SwiftRouting/Routers/Sheets/SheetsRouter/SheetsRouterDemo.swift) 
+Have a look at [SheetsRouterDemo](Sources/SwiftRouting/Routers/Sheets/SheetsRouter/SheetsRouterDemo.swift) 
 
 ### Notes
 Be careful of retaining cycle when creating `Routable`. Basically our router implementations strong hold reference of routable instance.  
