@@ -11,17 +11,17 @@ In swiftui, navigation is somehow coupled with ui and business logic layer. This
 ## Definition 
 
 Here is the list of the most import concepts to define. 
-1- `Routable` routable represents any swiftui view that needs to be displayed. 
-2- `Router`  is an abstract layer that takes a routable and knows how to display it. 
+1. `Routable` routable represents any swiftui view that needs to be displayed. 
+2. `Router`  is an abstract layer that takes a routable and knows how to display it. 
 
 
 Currently the Library provides 3 routers. Later on more can be added, but for now i covered the basic. Follow the concept of `Routable` you can have different sort of routers, like pageview, tab etc... 
 
-1- `SheetRouter`: Provides a convenient way to show hide a view as a sheet. You can show as full or partial. `SheetRouter` allows only one view (regardless if its fullscreen or partial) at a time and it make sure all calls are synchronised. In other words, if you call show twice, the second call will hide the existing and show the new one. The reason we synchronise is to avoid any UI issues and for proper dismiss handler calls.
+1. `SheetRouter`: Provides a convenient way to show hide a view as a sheet. You can show as full or partial. `SheetRouter` allows only one view (regardless if its fullscreen or partial) at a time and it make sure all calls are synchronised. In other words, if you call show twice, the second call will hide the existing and show the new one. The reason we synchronise is to avoid any UI issues and for proper dismiss handler calls.
 
-2- `SheetsRouter`: Provides a convenient way to show hide as many views as a sheet. `SheetsRouter` allows to stack views on top of each other presented as sheets, without having to worry if an existing sheet is present or not. It also sycnrhonise all calls. In other words, if you try to show 2 views at the same time, It will present both views sequantially.
+2. `SheetsRouter`: Provides a convenient way to show hide as many views as a sheet. `SheetsRouter` allows to stack views on top of each other presented as sheets, without having to worry if an existing sheet is present or not. It also sycnrhonise all calls. In other words, if you try to show 2 views at the same time, It will present both views sequantially.
  
-3- `NavigationRouter`: Provides a convenient way for to push pop views. 
+3. `NavigationRouter`: Provides a convenient way for to push pop views. 
 
 
 Routers are also themselves Routables. For example you need to create a PageRouter (display view by sliding left/right from one view to another), where each page has a NavigationRouter. 
@@ -86,6 +86,7 @@ Have a look at [NavigationRouterDemo](Sources/SwiftRouting/Routers/Navigation/Na
 ### Notes
 
 1. Retaining Cycle
+
 Be careful of retaining cycle when creating `Routable`. Basically our router implementations strong hold reference of routable instance.  
 
 If for example you have a parent Coordinator that has strong reference for our built in router, and you want to pass the parent Coordinator to your routable, in order to know how to navigate, make sure you weakly retain the parent coordinator reference in your routable, otherwise you will create a retaining cycle. 
@@ -94,6 +95,7 @@ ParentCoordinator (Hold strong reference)-> SheetRouter (Hold strong routable)->
 ```
 
 2. Hide Sheets on iOS 17
+
 Hide sheets on iOS 17 might not work properly. Regardless of our code base, even when using transaction disable animation on sheets, seems to have an issue with iOS 17.
 
 ### Future works. 
