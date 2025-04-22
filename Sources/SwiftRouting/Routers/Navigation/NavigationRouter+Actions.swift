@@ -9,9 +9,9 @@
 @MainActor
 protocol NavigationActions {
     func setMain<T: Routable>(_ routable: T)
-    func push<T: Routable>(_ routable: T)
-    func popLast()
-    func popToRoot()
+    func push<T: Routable>(_ routable: T, animated: Bool)
+    func popLast(animated: Bool)
+    func popToRoot(animated: Bool)
 }
 
 extension NavigationRouter: NavigationActions {
@@ -26,17 +26,23 @@ extension NavigationRouter: NavigationActions {
     /// push a routable
     /// Parameters:
     ///  - routable:  Represent Routable object or any view that needs to be displayed. check `Routable` for more info.
-    public func push<T: Routable>(_ routable: T) {
-        paths.append(AnyRoutable(routable))
+    public func push<T: Routable>(_ routable: T, animated: Bool = true) {
+        runWithAnimation(animated: animated) {
+            paths.append(AnyRoutable(routable))
+        }
     }
     
     /// pop last
-    public func popLast() {
-        paths.removeLast()
+    public func popLast(animated: Bool = true) {
+        runWithAnimation(animated: animated) {
+            paths.removeLast()
+        }
     }
     
     /// pop to Root
-    public func popToRoot() {
-        paths.removeLast(self.paths.count)
+    public func popToRoot(animated: Bool = true) {
+        runWithAnimation(animated: animated) {
+            paths.removeLast(self.paths.count)
+        }
     }
 }

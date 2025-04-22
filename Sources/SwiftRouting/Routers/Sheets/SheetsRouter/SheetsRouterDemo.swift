@@ -17,7 +17,7 @@ class SheersCordinator: ObservableObject  {
         let view = RoutableFactory { [unowned self] in
             return TestView1(coordinator: self)
         }
-        sheetsRouter.show(view) {
+        sheetsRouter.show(view, animated: false) {
             print("dimiss First")
         }
     }
@@ -66,7 +66,7 @@ class SheersCordinator: ObservableObject  {
     }
     
     func hide() {
-        sheetsRouter.hideAll(animated: true)
+        sheetsRouter.hideAll(animated: false)
     }
 }
 

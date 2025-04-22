@@ -24,7 +24,6 @@ public class SheetRouter : ObservableObject {
     @Published var fullRoutable: AnyRoutable?
     @Published var partialRoutable: AnyRoutable?
     
-    @Published var animated: Bool = true
    
     var queue: SerialQueue = .init()
     
@@ -51,15 +50,15 @@ extension SheetRouter {
         dismissHandler?()
     }
     
-    func _hide() async {
+    func _hide(animated: Bool) async {
         await withCheckedContinuation { @MainActor [weak self] continuation in
-            self?._hide() {
+            self?._hide(animated: animated) {
                 continuation.resume()
             }
         }
     }
     
-    func _hide( completion: @escaping SheetDismissHandler) {
+    func _hide(animated: Bool, completion: @escaping SheetDismissHandler) {
         guard self.fullRoutable != nil || self.partialRoutable != nil else {
             completion()
             return
@@ -67,19 +66,22 @@ extension SheetRouter {
         self.dismissHandlerCompletion = {
             completion()
         }
-      
-        self.partialRoutable = nil
-        self.fullRoutable = nil
+        
+        runWithAnimation(animated: animated) {
+            self.partialRoutable = nil
+            self.fullRoutable = nil
+        }
     }
     
     @discardableResult
     func showPartial<T: Routable>(_ routable:T, animated: Bool, dismissHandler:  SheetDismissHandler? = nil) async -> AnyRoutable  {
         let item = AnyRoutable(routable)
         await queue.execute {
-            self.animated = animated
-            await self._hide()
-            self.partialRoutable = item
-            self.partialDismissHandler = dismissHandler
+            await self._hide(animated: animated)
+            self.runWithAnimation(animated: animated) {
+                self.partialRoutable = item
+                self.partialDismissHandler = dismissHandler
+            }
         }
         return item
     }
@@ -88,11 +90,13 @@ extension SheetRouter {
     func showFull<T: Routable>(_ routable:T, animated: Bool, dismissHandler:  SheetDismissHandler? = nil) async -> AnyRoutable  {
         let item = AnyRoutable(routable)
         await queue.execute {
-            self.animated = animated
-            await self._hide()
-            self.fullRoutable = item
-            self.fullDismissHandler = dismissHandler
+            await self._hide(animated: animated)
+            self.runWithAnimation(animated: animated) {
+                self.fullRoutable = item
+                self.fullDismissHandler = dismissHandler
+            }
         }
         return item
     }
+    
 }

@@ -70,14 +70,9 @@ struct NestedSheetRouterViewModifier<SheetContent: View> : ViewModifier {
         content
             .fullScreenCover(item: $router.fullRoutable, onDismiss: self.router.dismissFullScreen) { routable in
                 sheetContent(routable)
-            }.transaction {
-                $0.disablesAnimations = !router.animated
             }
             .sheet(item: $router.partialRoutable, onDismiss: self.router.dismissPartialScreen) { routable in
                 sheetContent(routable)
-            }
-            .transaction {
-                $0.disablesAnimations = !router.animated
             }
     }
 }

@@ -47,7 +47,7 @@ class NavigationCoordinator :
     }
     
     func popFirst() {
-        router.popLast()
+        router.popLast(animated: false)
     }
     
     func pushSecond() {
@@ -128,11 +128,7 @@ fileprivate struct NavigationFirstView : View {
             }
             
             Button("Pop First") {
-                var transaction = Transaction(animation: .none)
-                transaction.disablesAnimations = true
-                withTransaction(transaction) {
-                    coordinator.popFirst()
-                }
+                coordinator.popFirst()
             }
         }
         

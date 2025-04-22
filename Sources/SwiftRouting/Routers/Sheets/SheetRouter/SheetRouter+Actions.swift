@@ -28,8 +28,7 @@ extension SheetRouter: SheetActions {
     ///
     public func hide(animated: Bool) async {
         await queue.execute { @MainActor [weak self] in
-            self?.animated = animated
-            await self?._hide()
+            await self?._hide(animated: animated)
         }
     }
    

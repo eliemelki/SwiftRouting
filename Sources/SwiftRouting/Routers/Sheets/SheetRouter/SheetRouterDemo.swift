@@ -17,7 +17,7 @@ class SheetCoordinator : ObservableObject {
         let routable = RoutableFactory { [unowned self] in
             return SheetView1(coordinator: self)
         }
-        sheetRouter.show(routable, sheetType: .partial) {
+        sheetRouter.show(routable, sheetType: .partial, animated: false) {
             print("dismissed SheetView1")
         }
     }
@@ -36,7 +36,7 @@ class SheetCoordinator : ObservableObject {
 //        sheetRouter.show(routable, sheetType: .fullScreen,animated: value % 2 == 0) {
 //            print("dismiss SheetView2")
 //        }
-        sheetRouter.show(routable, sheetType: .fullScreen) {
+        sheetRouter.show(routable, sheetType: .fullScreen, animated: true) {
             print("dismiss SheetView2")
         }
     }
@@ -44,7 +44,7 @@ class SheetCoordinator : ObservableObject {
     func hideSheet2() {
         value += 1
         //sheetRouter.hide(animated: value % 2 == 0)
-        sheetRouter.hide()
+        sheetRouter.hide(animated: false)
     }
 }
 
