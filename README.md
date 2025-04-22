@@ -84,6 +84,8 @@ Have a look at [NavigationRouterDemo](Sources/SwiftRouting/Routers/Navigation/Na
 
 
 ### Notes
+
+1. Retaining Cycle
 Be careful of retaining cycle when creating `Routable`. Basically our router implementations strong hold reference of routable instance.  
 
 If for example you have a parent Coordinator that has strong reference for our built in router, and you want to pass the parent Coordinator to your routable, in order to know how to navigate, make sure you weakly retain the parent coordinator reference in your routable, otherwise you will create a retaining cycle. 
@@ -91,5 +93,5 @@ If for example you have a parent Coordinator that has strong reference for our b
 ParentCoordinator (Hold strong reference)-> SheetRouter (Hold strong routable)-> Routable (Holds a strong reference of ParentCoordinator) eventually causing a retain cycle. 
 ```
 
-
-
+2. Hide Sheets on iOS 17
+Hide sheets on iOS 17 might not work properly. Regardless of our code base, even when using transaction disable animation on sheets, seems to have an issue with iOS 17.
