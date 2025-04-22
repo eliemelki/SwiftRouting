@@ -34,6 +34,9 @@ extension NavigationRouter: NavigationActions {
     
     /// pop last
     public func popLast(animated: Bool = true) {
+        guard paths.count > 0 else {
+            return
+        }
         runWithAnimation(animated: animated) {
             paths.removeLast()
         }
