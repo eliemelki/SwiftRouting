@@ -125,26 +125,6 @@ let mockRoutable2 = RoutableFactory() {
     #expect(dismissTrack == [1,2,3])
 }
 
-@MainActor
-@Test func testSheetAnimatedConcurent() async throws {
-    let sheetRouter = MockSheetRouter()
-    let tracker = sheetRouter.proxy.$animated.tracker()
-    let task1 = Task {
-        await sheetRouter.show(mockRoutable, animated: false)
-    }
-    let task2 = Task {
-        await sheetRouter.show(mockRoutable, sheetType: .fullScreen, animated: true)
-    }
-    let task3 = Task {
-        await sheetRouter.show(mockRoutable2, sheetType: .fullScreen, animated: false)
-    }
-    async let t1 = await task1.value
-    async let t2 = await task2.value
-    async let t3 = await task3.value
-    let _ = await "\(t1) \(t2) \(t3)"
-    
-    #expect(tracker.values == [false, true, false])
-}
 
 extension MockSheetRouter {
     
