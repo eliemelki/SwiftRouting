@@ -7,7 +7,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 ### Fixed
 - Fixing crash when poping from navigation view and count is 0 
 
-## Added
+### Added
 - Adding unit test cases for navigation router 
 
 
