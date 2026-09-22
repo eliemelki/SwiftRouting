@@ -6,33 +6,30 @@
 //
 
 import Foundation
+public typealias SerialQueueOperation<T> = @MainActor () async -> T
 
-public typealias SerialQueueOperation<T> = () async -> T
+@MainActor
+public final class SerialQueue {
+    private var isExecuting = false
+    private var waiters: [CheckedContinuation<Void, Never>] = []
 
-public actor SerialQueue {
-    private var operations: [Waitable] = []
-    
-    public func execute<T: Sendable>(@_inheritActorContext operation: @escaping SerialQueueOperation<T>) async -> T {
-        let last = operations.last
-        
-        let task = Task {
-            let _ = self
-            await last?.waitForCompletion()
-            return await operation()
+    public init() {}
+
+    public func execute<T>(operation: SerialQueueOperation<T>) async -> T {
+        if isExecuting {
+            await withCheckedContinuation { waiters.append($0) }
+        }else {
+            isExecuting = true
         }
-        operations.append(task)
-        let value = await task.value
-        operations.removeFirst()
-        return value
+
+        defer {
+            if waiters.isEmpty {
+                isExecuting = false
+            }else {
+                waiters.removeFirst().resume()
+            }
+        }
+
+        return await operation()
     }
-    
-//  if you dont want to use @_inheritActorContext, you will need to uncomment the below and call it instead. The below could cause
-//  data race in case it was called from a non isolated environment.
-//  Refer to this https://forums.swift.org/t/closure-isolation-inheritance-issues/78703 for more info
-//  func execute<T: Sendable>(isolation: isolated (any Actor)? = #isolation,_ operation: @escaping RoutingQueueOperation<T>) async -> T {
-//        return await Task {
-//            let _ = isolation
-//            return await self._execute(operation: operation)
-//        }.value
-//    }
 }

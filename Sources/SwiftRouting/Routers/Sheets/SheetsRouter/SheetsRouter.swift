@@ -48,6 +48,8 @@ extension SheetsRouter {
     }
     
     func _hide(index: Int, animated: Bool = true) async {
+        guard sheets.indices.contains(index) else { return }
+        
         if Test.isRunningTests() {
             //Do We want to hide them one by one?! Thats why for now only run for unit test.
             guard index >= 0 else { return }

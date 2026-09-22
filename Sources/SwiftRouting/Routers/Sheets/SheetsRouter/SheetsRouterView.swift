@@ -37,7 +37,7 @@ extension View {
         var sheets = sheets
         let sheet = sheets.removeFirst()
         return sheet.createView { r in
-            r.createView().buildSheetsFor(sheets: sheets)
+            AnyView(r.createView().buildSheetsFor(sheets: sheets))
         }
     }
 }
@@ -61,7 +61,7 @@ struct NestedSheetRouterViewModifier<SheetContent: View> : ViewModifier {
     @ObservedObject var router: SheetRouter
     var sheetContent: (AnyRoutable) -> SheetContent
     
-    init(router: SheetRouter, content: @escaping (AnyRoutable) -> SheetContent = { r in r.createView() }) {
+    init(router: SheetRouter, content: @escaping (AnyRoutable) -> SheetContent) {
         self.router = router
         self.sheetContent = content
     }

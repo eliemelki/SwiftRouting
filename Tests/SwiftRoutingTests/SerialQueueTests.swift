@@ -21,7 +21,7 @@ actor ResultRecorder {
 
 
 @Test func testSerialExecutionOrder() async {
-    let queue = SerialQueue()
+    let queue = await SerialQueue()
     let recorder = ResultRecorder()
     
     async let first: Void = queue.execute {
@@ -40,7 +40,7 @@ actor ResultRecorder {
 }
 
 @Test func testExecutionReturnsCorrectValue() async {
-    let queue = SerialQueue()
+    let queue = await SerialQueue()
     
     let result: Int = await queue.execute {
         return 42
@@ -50,7 +50,7 @@ actor ResultRecorder {
 }
 
 @Test func testMultipleExecutions() async {
-    let queue = SerialQueue()
+    let queue = await SerialQueue()
     var results: [Int] = []
     
     for i in 0..<5 {

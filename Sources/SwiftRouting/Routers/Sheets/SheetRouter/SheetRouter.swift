@@ -36,11 +36,11 @@ extension SheetRouter {
     
     func dismiss(routable: AnyRoutable?, dismissHandler: SheetDismissHandler?)  {
         defer {
-            let handler = dismissHandlerCompletion
+            let completion = dismissHandlerCompletion
             fullDismissHandler = nil
             partialDismissHandler = nil
             dismissHandlerCompletion = nil
-            handler?()
+            completion?()
         }
         
         guard routable == nil else {
@@ -100,3 +100,5 @@ extension SheetRouter {
     }
     
 }
+
+

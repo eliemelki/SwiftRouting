@@ -1,0 +1,24 @@
+{
+  "configurations" : [
+    {
+      "id" : "A7BBDF0F-1B64-4607-91B0-81B2B3EC34DA",
+      "name" : "Test Scheme Action",
+      "options" : {
+
+      }
+    }
+  ],
+  "defaultOptions" : {
+    "performanceAntipatternCheckerEnabled" : true
+  },
+  "testTargets" : [
+    {
+      "target" : {
+        "containerPath" : "container:",
+        "identifier" : "SwiftRoutingTests",
+        "name" : "SwiftRoutingTests"
+      }
+    }
+  ],
+  "version" : 1
+}
