@@ -71,11 +71,22 @@ struct NavigationExample: View {
 
 - `root` is the destination below the pushed stack.
 - `path` contains pushed `RouteEntry` values. SwiftUI updates it when the user goes back.
-- `push(_:animated:)` appends a new occurrence, even when the route repeats.
+- `push(_:animated:)` appends and returns a new occurrence, even when the route repeats.
+- `pop(entry:animated:)` removes that exact entry and everything pushed after it.
+- `pop(to:animated:)` keeps that exact entry and removes everything pushed after it.
+  An entry absent from the current path does nothing.
 - `popLast(animated:)` removes the last entry; an empty path is unchanged.
 - `popToRoot(animated:)` removes every pushed entry.
 - `setRoot(_:)` replaces the root while preserving the path. Call `popToRoot()`
   separately when you also want to clear the stack.
+
+```swift
+// In a main-actor coordinator:
+let detail = router.push(.detail(42))
+router.push(.settings)
+router.pop(to: detail) // Displays detail(42), keeping its entry.
+router.pop(entry: detail) // Removes detail(42), returning to the root.
+```
 
 See [NavigationRouterDemo](Sources/SwiftRouting/Routers/Navigation/NavigationRouterDemo.swift).
 
