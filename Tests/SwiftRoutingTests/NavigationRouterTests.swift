@@ -9,33 +9,33 @@ import Testing
 
 @MainActor
 @Test func testNavigationRouter() async throws {
-    let router = NavigationRouter(main: mockRoutable)
-    #expect(router.main == mockRoutable)
-    #expect(router.paths.count == 0)
-    
-    router.setMain(mockRoutable)
-    #expect(router.main == mockRoutable)
-    #expect(router.paths.count == 0)
-    
-    
-    router.push(mockRoutable)
-    #expect(router.main == mockRoutable)
-    #expect(router.paths.count == 1)
-    #expect(router.paths[0].route == mockRoutable)
-    
+    let router = NavigationRouter(root: firstRoute)
+    #expect(router.root == firstRoute)
+    #expect(router.path.count == 0)
+
+    router.setRoot(firstRoute)
+    #expect(router.root == firstRoute)
+    #expect(router.path.count == 0)
+
+
+    router.push(firstRoute)
+    #expect(router.root == firstRoute)
+    #expect(router.path.count == 1)
+    #expect(router.path[0].route == firstRoute)
+
     router.popLast()
     router.popLast()
-    #expect(router.paths.count == 0)
-    
-    router.push(mockRoutable, animated: false)
-    router.push(mockRoutable)
-    router.push(mockRoutable)
-    #expect(router.paths.count == 3)
-    
+    #expect(router.path.count == 0)
+
+    router.push(firstRoute, animated: false)
+    router.push(firstRoute)
+    router.push(firstRoute)
+    #expect(router.path.count == 3)
+
     router.popLast(animated: false)
-    #expect(router.paths.count == 2)
-    
+    #expect(router.path.count == 2)
+
     router.popToRoot()
     router.popToRoot(animated: false)
-    #expect(router.paths.count == 0)
+    #expect(router.path.count == 0)
 }

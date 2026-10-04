@@ -7,150 +7,158 @@
 
 // MARK: - SheetsActions
 
+/// Async actions for a stack of typed sheet presentations.
 @MainActor
 public protocol SheetsActions {
+    /// The destination value accepted by presentation actions.
     associatedtype T: Route
-    
+
+    /// See the corresponding async method on `SheetsRouter`.
     @discardableResult
-    func show(_ routable: T, sheetType: SheetType, animated: Bool, onDismiss: SheetDismissHandler?) async -> RouteEntry<T>?
-    
+    func show(_ route: T, sheetType: SheetType, animated: Bool, onDismiss: SheetDismissHandler?) async -> RouteEntry<T>?
+
+    /// See the corresponding async method on `SheetsRouter`.
     @discardableResult
-    func replace(_ routable: T, sheetType: SheetType, animated: Bool,onDismiss: SheetDismissHandler?) async -> RouteEntry<T>?
-    
+    func replace(_ route: T, sheetType: SheetType, animated: Bool, onDismiss: SheetDismissHandler?) async -> RouteEntry<T>?
+
+    /// See the corresponding async method on `SheetsRouter`.
     func hide(animated: Bool) async
-    
- 
+
+    /// See the corresponding async method on `SheetsRouter`.
     func hide(index: Int, animated: Bool) async
-    
-    func hide(routable: RouteEntry<T>, animated: Bool) async
-    
+
+    /// See the corresponding async method on `SheetsRouter`.
+    func hide(entry: RouteEntry<T>, animated: Bool) async
+
+    /// See the corresponding async method on `SheetsRouter`.
     func hideAll(animated: Bool) async
 }
 
 // MARK: - SheetsRouter - SheetsActions
 
 extension SheetsRouter: SheetsActions {
-    
-    /// Show a sheet using async
+
+    /// Adds a new sheet above the current stack and assigns its presentation entry.
+    /// Calls are serialized; this returns before the presentation animation finishes.
     /// - Parameters:
-    ///   - routable: The route to display.
-    ///   - sheetType: how to show sheet wether full or partial.
-    ///   - animated: animate sheet showing
-    ///   - dismissHandler: callback when sheet is dismissed. This get called when automatically or manually hiding the sheet. Manually as per calling hide explicitly.
-    /// - Returns: The unique entry for this presentation.
-    ///
+    ///   - route: The destination to present.
+    ///   - sheetType: A partial sheet or a full-screen cover.
+    ///   - animated: Whether to allow the presentation transition to animate.
+    ///   - onDismiss: Called once after this sheet is removed from the stack.
+    /// - Returns: The new occurrence, or nil if the router is unavailable when its queued action runs.
     @discardableResult
-    public func show(_ item: T,  sheetType: SheetType = .partial, animated: Bool = true, onDismiss: SheetDismissHandler? = nil) async -> RouteEntry<T>? {
+    public func show(_ route: T, sheetType: SheetType = .partial, animated: Bool = true, onDismiss: SheetDismissHandler? = nil) async -> RouteEntry<T>? {
         return await queue.execute { @MainActor [weak self] in
-            return await self?._show(item, sheetType:sheetType, animated: animated, onDismiss: onDismiss)
+            return await self?.showPresentation(route, sheetType: sheetType, animated: animated, onDismiss: onDismiss)
         }
     }
-    
-    /// Replace an sheet using async
+
+    /// Dismisses the top sheet, waits for its callback, then presents a new destination.
+    /// With an empty stack, behaves like `show`.
     /// - Parameters:
-    ///   - routable: The route to display.
-    ///   - sheetType: how to show sheet wether full or partial.
-    ///   - animated: animate sheet showing
-    ///   - dismissHandler: callback when sheet is dismissed. This get called when automatically or manually hiding the sheet. Manually as per calling hide explicitly.
-    /// - Returns: The unique entry for this presentation.
-    ///
+    ///   - route: The replacement destination.
+    ///   - sheetType: A partial sheet or a full-screen cover.
+    ///   - animated: Whether to allow dismissal and presentation animations.
+    ///   - onDismiss: Called once after the replacement sheet is removed.
+    /// - Returns: The new occurrence, or nil if the router is unavailable when its queued action runs.
     @discardableResult
-    public func replace(_ item: T, sheetType: SheetType = .partial, animated: Bool = true, onDismiss: SheetDismissHandler? = nil) async -> RouteEntry<T>? {
+    public func replace(_ route: T, sheetType: SheetType = .partial, animated: Bool = true, onDismiss: SheetDismissHandler? = nil) async -> RouteEntry<T>? {
         return await queue.execute { [weak self] in
-            await self?._hide(animated: animated)
-            return await self?._show(item, sheetType:sheetType, animated: animated, onDismiss: onDismiss)
+            await self?.hidePresentations(animated: animated)
+            return await self?.showPresentation(route, sheetType: sheetType, animated: animated, onDismiss: onDismiss)
         }
     }
-    
-    /// Hide a sheet sheet asycnhronusly
-    /// - Parameters:
-    ///   - animated: animate sheet hiding
-    ///
-    ///
+
+    /// Dismisses the top sheet and waits for its dismissal callback.
+    /// An empty stack is unchanged.
+    /// - Parameter animated: Whether to allow the dismissal transition to animate.
     public func hide(animated: Bool = true) async {
         await queue.execute { [weak self] in
-            await self?._hide(animated: animated)
+            await self?.hidePresentations(animated: animated)
         }
     }
-    
-    /// Hide a sheet sheet asycnhronusly
-    /// - Parameters:
-    ///   - index: hide the sheet at specific Index. if Index doesnt exist nothing should occurs.
-    ///   - animated: animate sheet hiding
-    ///
+
+    /// Dismisses every sheet from top to bottom, waiting for each dismissal callback.
+    /// - Parameter animated: Whether to allow the dismissal transitions to animate.
     public func hideAll(animated: Bool = true) async {
         await queue.execute { [weak self] in
-            await self?._hide(index: 0, animated: animated)
+            await self?.hidePresentations(index: 0, animated: animated)
         }
     }
-    
-    /// Hide a specific routable asycnhronusly.
+
+    /// Dismisses the sheet at an index and every sheet above it, from top to bottom.
     /// - Parameters:
-    ///   - routable: The entry identifying the presentation to dismiss.
-    ///   - animated: animate sheet hiding
-    ///
-    ///
+    ///   - index: A zero-based position from the bottom of the stack. Invalid indices do nothing.
+    ///   - animated: Whether to allow the dismissal transitions to animate.
     public func hide(index: Int, animated: Bool = true) async {
         await queue.execute { [weak self] in
-            await self?._hide(index: index, animated: animated)
+            await self?.hidePresentations(index: index, animated: animated)
         }
     }
-    
-    /// Hide all presented sheets.
+
+    /// Dismisses an exact occurrence and every sheet above it, from top to bottom.
     /// - Parameters:
-    ///   - animated: animate sheet hiding
-    ///
-    ///
-    public func hide(routable: RouteEntry<T>,animated: Bool = true) async {
+    ///   - entry: The occurrence returned by `show` or `replace`. Unknown entries do nothing.
+    ///   - animated: Whether to allow the dismissal transitions to animate.
+    public func hide(entry: RouteEntry<T>, animated: Bool = true) async {
         await queue.execute { [weak self] in
-            let index = self?.sheets.firstIndex { $0.isDisplaying(routable) }
+            let index = self?.sheets.firstIndex { $0.isDisplaying(entry) }
             guard let index else {
                 return
             }
-            await self?._hide(index: index, animated: animated)
+            await self?.hidePresentations(index: index, animated: animated)
         }
     }
 }
 
-
 public extension SheetsRouter {
-    
-    ///Same as show(...) async yet it doesnt needs an await
-    func show(_ routable: T, sheetType: SheetType = .partial, animated: Bool = true, onDismiss: SheetDismissHandler? = nil) {
+
+    /// Schedules `show` in a task; use the async overload to receive its entry.
+    /// Parameters have the same meaning as in the async overload.
+    func show(_ route: T, sheetType: SheetType = .partial, animated: Bool = true, onDismiss: SheetDismissHandler? = nil) {
         Task {
-            await self.show(routable, sheetType: sheetType, animated: animated, onDismiss: onDismiss)
+            await self.show(route, sheetType: sheetType, animated: animated, onDismiss: onDismiss)
         }
     }
-    
-    ///Same as replace(...) async yet it doesnt needs an await
-    func replace(_ routable: T, sheetType: SheetType = .partial, animated: Bool = true, onDismiss: SheetDismissHandler? = nil) {
+
+    /// Schedules `replace` in a task; use the async overload to receive its entry.
+    /// Parameters have the same meaning as in the async overload.
+    func replace(_ route: T, sheetType: SheetType = .partial, animated: Bool = true, onDismiss: SheetDismissHandler? = nil) {
         Task {
-            await self.replace(routable, sheetType: sheetType, animated: animated, onDismiss: onDismiss)
+            await self.replace(route, sheetType: sheetType, animated: animated, onDismiss: onDismiss)
         }
     }
-    
-    ///Same as hide(...) async yet it doesnt needs an await
+
+    /// Schedules dismissal of the top sheet without waiting for its callback.
+    /// - Parameter animated: Whether to allow the dismissal transition to animate.
     func hide(animated: Bool = true) {
         Task {
             await self.hide(animated: animated)
         }
     }
-    
-    ///Same as hide(...) async yet it doesnt needs an await
-    func hide(index: Int, animated: Bool = true)  {
+
+    /// Schedules dismissal at an index and above without waiting for callbacks.
+    /// - Parameters:
+    ///   - index: A zero-based stack position. Invalid indices do nothing.
+    ///   - animated: Whether to allow the dismissal transitions to animate.
+    func hide(index: Int, animated: Bool = true) {
         Task {
             await self.hide(index: index, animated: animated)
         }
     }
-    
-    ///Same as hide(...) async yet it doesnt needs an await
-    func hide(routable: RouteEntry<T>, animated: Bool = true)  {
+
+    /// Schedules dismissal of an occurrence and above without waiting for callbacks.
+    /// - Parameters:
+    ///   - entry: The presentation occurrence. Unknown entries do nothing.
+    ///   - animated: Whether to allow the dismissal transitions to animate.
+    func hide(entry: RouteEntry<T>, animated: Bool = true) {
         Task {
-            await self.hide(routable: routable, animated: animated)
+            await self.hide(entry: entry, animated: animated)
         }
     }
-    
-    ///Same as hide(...) async yet it doesnt needs an await
+
+    /// Schedules dismissal of all sheets without waiting for callbacks.
+    /// - Parameter animated: Whether to allow the dismissal transitions to animate.
     func hideAll(animated: Bool = true) {
         Task {
             await self.hideAll(animated: animated)

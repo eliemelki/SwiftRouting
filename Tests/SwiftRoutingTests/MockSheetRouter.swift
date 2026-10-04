@@ -2,28 +2,27 @@
 import Combine
 
 enum TestRoute: Route { case first, second }
-let mockRoutable = TestRoute.first
-let mockRoutable2 = TestRoute.second
+let firstRoute = TestRoute.first
+let secondRoute = TestRoute.second
 
 struct MockSheetsRouterFactory: SheetsRouterFactory {
-    func instanceOfSheet() -> SheetRouter<TestRoute> { MockSheetRouter() }
+    func makeSheetRouter() -> SheetRouter<TestRoute> { MockSheetRouter() }
 }
 
 @MainActor
 class MockSheetRouter: SheetRouter<TestRoute> {
-    var proxy: SheetRouter<TestRoute> { self }
     private var subscriptions: Set<AnyCancellable> = []
 
     override init() {
         super.init()
-        $fullRoutable.dropFirst().sink { [weak self] value in
+        $fullScreenEntry.dropFirst().sink { [weak self] value in
             if value == nil {
-                Task { @MainActor in self?.dismissFullScreen() }
+                Task { @MainActor in self?.didDismissFullScreen() }
             }
         }.store(in: &subscriptions)
-        $partialRoutable.dropFirst().sink { [weak self] value in
+        $partialEntry.dropFirst().sink { [weak self] value in
             if value == nil {
-                Task { @MainActor in self?.dismissPartialScreen() }
+                Task { @MainActor in self?.didDismissPartialSheet() }
             }
         }.store(in: &subscriptions)
     }

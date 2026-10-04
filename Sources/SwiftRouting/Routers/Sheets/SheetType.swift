@@ -5,13 +5,10 @@
 //  Created by Elie Melki on 03/04/2025.
 //
 
-
-// MARK: - SheetType
-
-/// SheetType, it can be either fullScreen or partial
-public enum SheetType {
-    ///Display in full screen mode
+/// The presentation style used by a sheet router.
+public enum SheetType: Sendable {
+    /// Presents the destination using SwiftUI's full-screen cover.
     case fullScreen
-    ///Display in partial mode
+    /// Presents the destination using SwiftUI's sheet.
     case partial
 }

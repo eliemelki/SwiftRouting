@@ -1,5 +1,5 @@
 //
-//  File.swift
+//  SheetsRouterTests.swift
 //  SwiftRouting
 //
 //  Created by Elie Melki on 21/03/2025.
@@ -21,7 +21,7 @@ import SwiftUI
 @MainActor
 @Test func testSheetsRouterShowState() async throws {
     let sheetsRouter = SheetsRouter(factory: MockSheetsRouterFactory())
-    await sheetsRouter.show(mockRoutable)
+    await sheetsRouter.show(firstRoute)
     #expect(sheetsRouter.sheets.count == 1)
     await sheetsRouter.hide()
     #expect(sheetsRouter.sheets.isEmpty)
@@ -30,10 +30,10 @@ import SwiftUI
 @MainActor
 @Test func testSheetsRouterMultipleShowState() async throws {
     let sheetsRouter = SheetsRouter(factory: MockSheetsRouterFactory())
-    await sheetsRouter.show(mockRoutable)
-    await sheetsRouter.show(mockRoutable)
-    await sheetsRouter.show(mockRoutable)
-    await sheetsRouter.show(mockRoutable)
+    await sheetsRouter.show(firstRoute)
+    await sheetsRouter.show(firstRoute)
+    await sheetsRouter.show(firstRoute)
+    await sheetsRouter.show(firstRoute)
     #expect(sheetsRouter.sheets.count == 4)
     await sheetsRouter.hide()
     #expect(sheetsRouter.sheets.count == 3)
@@ -42,10 +42,10 @@ import SwiftUI
 @MainActor
 @Test func testSheetsRouterHideAllState() async throws {
     let sheetsRouter = SheetsRouter(factory: MockSheetsRouterFactory())
-    await sheetsRouter.show(mockRoutable)
-    await sheetsRouter.show(mockRoutable)
-    await sheetsRouter.show(mockRoutable)
-    await sheetsRouter.show(mockRoutable)
+    await sheetsRouter.show(firstRoute)
+    await sheetsRouter.show(firstRoute)
+    await sheetsRouter.show(firstRoute)
+    await sheetsRouter.show(firstRoute)
     #expect(sheetsRouter.sheets.count == 4)
     await sheetsRouter.hideAll()
     #expect(sheetsRouter.sheets.isEmpty)
@@ -53,14 +53,14 @@ import SwiftUI
 
 
 @MainActor
-@Test func testSheetsRouterHideAtSpecificRoutableState() async throws {
+@Test func testSheetsRouterHideAtSpecificEntryState() async throws {
     let sheetsRouter = SheetsRouter(factory: MockSheetsRouterFactory())
-    await sheetsRouter.show(mockRoutable)
-    await sheetsRouter.show(mockRoutable)
-    let routable = await sheetsRouter.show(mockRoutable)
-    await sheetsRouter.show(mockRoutable)
+    await sheetsRouter.show(firstRoute)
+    await sheetsRouter.show(firstRoute)
+    let entry = await sheetsRouter.show(firstRoute)
+    await sheetsRouter.show(firstRoute)
     #expect(sheetsRouter.sheets.count == 4)
-    await sheetsRouter.hide(routable: routable!)
+    await sheetsRouter.hide(entry: entry!)
     #expect(sheetsRouter.sheets.count == 2)
     await sheetsRouter.hide()
     #expect(sheetsRouter.sheets.count == 1)
@@ -69,16 +69,16 @@ import SwiftUI
 @MainActor
 @Test func testSheetsRouterHideState() async throws {
     let sheetsRouter = SheetsRouter(factory: MockSheetsRouterFactory())
-    await sheetsRouter.show(mockRoutable)
+    await sheetsRouter.show(firstRoute)
     #expect(sheetsRouter.sheets.count == 1)
     await sheetsRouter.hide()
     #expect(sheetsRouter.sheets.isEmpty)
-    await sheetsRouter.show(mockRoutable)
-    await sheetsRouter.show(mockRoutable)
+    await sheetsRouter.show(firstRoute)
+    await sheetsRouter.show(firstRoute)
     #expect(sheetsRouter.sheets.count == 2)
     await sheetsRouter.hide()
     #expect(sheetsRouter.sheets.count == 1)
-    
+
 }
 
 
@@ -87,46 +87,46 @@ import SwiftUI
     var firstDismissCalled = false
     var secondDismissCalled = false
     var thirdDismissCalled = false
-    
+
     let sheetsRouter = SheetsRouter(factory: MockSheetsRouterFactory())
-    
-    await sheetsRouter.show(mockRoutable) {
+
+    await sheetsRouter.show(firstRoute) {
         firstDismissCalled = !firstDismissCalled
     }
-    await sheetsRouter.show(mockRoutable, sheetType: .fullScreen) {
+    await sheetsRouter.show(firstRoute, sheetType: .fullScreen) {
         secondDismissCalled = !secondDismissCalled
     }
-    
-    await sheetsRouter.show(mockRoutable, sheetType: .fullScreen) {
+
+    await sheetsRouter.show(firstRoute, sheetType: .fullScreen) {
         thirdDismissCalled = !thirdDismissCalled
     }
-    
+
     await sheetsRouter.hide()
-    
+
     #expect(!firstDismissCalled)
     #expect(!secondDismissCalled)
     #expect(thirdDismissCalled)
-    
+
     await sheetsRouter.hideAll()
     #expect(firstDismissCalled)
     #expect(secondDismissCalled)
     #expect(thirdDismissCalled)
-    
+
     #expect(sheetsRouter.sheets.isEmpty)
 }
 
 @MainActor
-@Test func testSheetsConcurent() async throws {
+@Test func testSheetsConcurrent() async throws {
     var dismissTrack: [Int] = []
     let sheetsRouter = SheetsRouter(factory: MockSheetsRouterFactory())
-    
+
     let task1 = Task {
-        await sheetsRouter.show(mockRoutable) {
+        await sheetsRouter.show(firstRoute) {
             dismissTrack.append(1)
         }
     }
     let task2 = Task {
-        await sheetsRouter.replace(mockRoutable) {
+        await sheetsRouter.replace(firstRoute) {
             dismissTrack.append(2)
         }
     }
@@ -138,7 +138,7 @@ import SwiftUI
     async let t3: Void = await task3.value
     let _ = await "\(t1.debugDescription) \(t2.debugDescription)"
     let _ = await "\(t3)"
-    
+
     #expect(dismissTrack == [1,2])
     #expect(sheetsRouter.sheets.count == 0)
 
@@ -148,14 +148,14 @@ import SwiftUI
 @Test func testSheetsConcurent1() async throws {
     var dismissTrack: [Int] = []
     let sheetsRouter = SheetsRouter(factory: MockSheetsRouterFactory())
-    
+
     let task1 = Task {
-        await sheetsRouter.show(mockRoutable) {
+        await sheetsRouter.show(firstRoute) {
             dismissTrack.append(1)
         }
     }
     let task2 = Task {
-        await sheetsRouter.show(mockRoutable) {
+        await sheetsRouter.show(firstRoute) {
             dismissTrack.append(2)
         }
     }
@@ -167,7 +167,7 @@ import SwiftUI
     async let t3: Void = await task3.value
     let _ = await "\(t1.debugDescription) \(t2.debugDescription)"
     let _ = await "\(t3)"
-    
+
     #expect(dismissTrack == [2,1])
     #expect(sheetsRouter.sheets.count == 0)
 }

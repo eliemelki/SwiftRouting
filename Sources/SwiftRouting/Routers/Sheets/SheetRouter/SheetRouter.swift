@@ -1,5 +1,5 @@
 //
-//  SheetVM.swift
+//  SheetRouter.swift
 //  SwiftRouting
 //
 //  Created by Elie Melki on 14/03/2025.
@@ -7,98 +7,104 @@
 
 import SwiftUI
 
-public typealias SheetDismissHandler = () -> ()
+/// A callback invoked once after a sheet presentation is dismissed.
+public typealias SheetDismissHandler = () -> Void
 
-
-///SheetRouter allows only one sheet (regardless if its fullscreen or partial) at a time and it make sure all calls are synchronised. In other words, if you call show twice, the second call  will hide the existing and show the new one. The reason we synchronise is to avoid any UI issues and for proper dismiss handler calls.
-///Basicall it internally add a placeholder for a fullScreenCover and a sheet.
-///
+/// Coordinates one partial sheet or full-screen cover at a time.
+/// Showing a new route waits for the existing presentation's dismissal callback.
+/// Attach `view(makeView:)` or `sheetRouterView(_:makeView:)` to render destinations.
 @MainActor
-public class SheetRouter<T: Route> : ObservableObject {
-    
-    var fullDismissHandler: SheetDismissHandler?
-    var partialDismissHandler: SheetDismissHandler?
-    
-    private var dismissHandlerCompletion: SheetDismissHandler?
-    
-    @Published var fullRoutable: RouteEntry<T>?
-    @Published var partialRoutable: RouteEntry<T>?
-    
-   
+public class SheetRouter<T: Route>: ObservableObject {
+
+    /// The callback belonging to the active full-screen occurrence.
+    var onFullScreenDismiss: SheetDismissHandler?
+    /// The callback belonging to the active partial-sheet occurrence.
+    var onPartialDismiss: SheetDismissHandler?
+
+    /// Resumes the queued hide after SwiftUI completes dismissal.
+    private var dismissalCompletion: SheetDismissHandler?
+
+    /// The full-screen presentation binding; nil when no full-screen entry is assigned.
+    @Published public internal(set) var fullScreenEntry: RouteEntry<T>?
+    /// The partial-sheet presentation binding; nil when no partial entry is assigned.
+    @Published public internal(set) var partialEntry: RouteEntry<T>?
+
+    /// Remains set while a cleared presentation binding is still dismissing.
     private var activeSheetType: SheetType?
 
     var queue: SerialQueue = .init()
-    
-    public init() {
-        
-    }
+
+    /// Creates a router with no active presentation.
+    public init() {}
 }
 
 extension SheetRouter {
-    
-    func dismiss(route: RouteEntry<T>?, sheetType: SheetType, dismissHandler: SheetDismissHandler?)  {
-        guard activeSheetType == sheetType, route == nil else { return }
-        let completion = dismissHandlerCompletion
+
+    /// Consumes the matching dismissal callback and resumes the queued operation.
+    func finishDismissal(entry: RouteEntry<T>?, sheetType: SheetType, onDismiss: SheetDismissHandler?) {
+        guard activeSheetType == sheetType, entry == nil else { return }
+        let completion = dismissalCompletion
         activeSheetType = nil
-        fullDismissHandler = nil
-        partialDismissHandler = nil
-        dismissHandlerCompletion = nil
-        dismissHandler?()
+        onFullScreenDismiss = nil
+        onPartialDismiss = nil
+        dismissalCompletion = nil
+        onDismiss?()
         completion?()
     }
-    
-    func _hide(animated: Bool) async {
+
+    /// Bridges SwiftUI dismissal completion into the queued async action.
+    func hidePresentation(animated: Bool) async {
         await withCheckedContinuation { @MainActor continuation in
-            self._hide(animated: animated) {
+            self.hidePresentation(animated: animated) {
                 continuation.resume()
             }
         }
     }
-    
-    func _hide(animated: Bool, completion: @escaping SheetDismissHandler) {
+
+    /// Clears presentation entries and completes after the matching onDismiss callback.
+    func hidePresentation(animated: Bool, completion: @escaping SheetDismissHandler) {
         // A swipe clears the binding before onDismiss. Still wait for that callback.
         guard activeSheetType != nil else {
             completion()
             return
         }
-        self.dismissHandlerCompletion = {
-            completion()
-        }
-        
+        self.dismissalCompletion = completion
+
         runWithAnimation(animated: animated) {
-            self.partialRoutable = nil
-            self.fullRoutable = nil
+            self.partialEntry = nil
+            self.fullScreenEntry = nil
         }
     }
-    
+
+    /// Queues replacement with a partial-sheet entry.
     @discardableResult
-    func showPartial(_ routable:T, animated: Bool, dismissHandler:  SheetDismissHandler? = nil) async -> RouteEntry<T>  {
-        let item = RouteEntry(routable)
+    func showPartial(_ route: T, animated: Bool, onDismiss: SheetDismissHandler? = nil) async -> RouteEntry<T> {
+        let entry = RouteEntry(route)
         await queue.execute {
-            await self._hide(animated: animated)
+            await self.hidePresentation(animated: animated)
             self.runWithAnimation(animated: animated) {
                 self.activeSheetType = .partial
-                self.partialRoutable = item
-                self.partialDismissHandler = dismissHandler
+                self.partialEntry = entry
+                self.onPartialDismiss = onDismiss
             }
         }
-        return item
+        return entry
     }
-  
+
+    /// Queues replacement with a full-screen entry.
     @discardableResult
-    func showFull(_ routable:T, animated: Bool, dismissHandler:  SheetDismissHandler? = nil) async -> RouteEntry<T>  {
-        let item = RouteEntry(routable)
+    func showFullScreen(_ route: T, animated: Bool, onDismiss: SheetDismissHandler? = nil) async -> RouteEntry<T> {
+        let entry = RouteEntry(route)
         await queue.execute {
-            await self._hide(animated: animated)
+            await self.hidePresentation(animated: animated)
             self.runWithAnimation(animated: animated) {
                 self.activeSheetType = .fullScreen
-                self.fullRoutable = item
-                self.fullDismissHandler = dismissHandler
+                self.fullScreenEntry = entry
+                self.onFullScreenDismiss = onDismiss
             }
         }
-        return item
+        return entry
     }
-    
-}
 
+}
 

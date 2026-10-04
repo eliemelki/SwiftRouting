@@ -1,4 +1,3 @@
-
 import SwiftUI
 
 enum NavigationRoute: Route {
@@ -8,93 +7,58 @@ enum NavigationRoute: Route {
 }
 
 @MainActor
-class NavigationCoordinator: MainCoordinator,
+class NavigationCoordinator: ObservableObject, MainCoordinator,
                              FirstCoordinator,
                              SecondCoordinator {
-    
+
     let navigationRouter : NavigationRouter<NavigationRoute>
-    
+
     init() {
-        navigationRouter = NavigationRouter<NavigationRoute>(main: .main)
+        navigationRouter = NavigationRouter<NavigationRoute>(root: .main)
     }
-    
-    
+
     func pushFirst() {
         self.navigationRouter.push(.first, animated: false)
     }
-    
+
     func popFirst() {
         self.navigationRouter.popLast(animated: false)
     }
-    
+
     func pushSecond() {
         self.navigationRouter.push(.second)
     }
-    
+
     func popSecond() {
         self.navigationRouter.popLast()
     }
-    
+
     func popAll() {
         self.navigationRouter.popToRoot()
     }
-    
-    
-    private var mainViewModel: NavigationMainViewModel?
-    private var firstViewModel: NavigationFirstViewModel?
-    private var secondViewModel: NavigationSecondViewModel?
-    
- 
+
     @MainActor
     @ViewBuilder
-    func showNavigationView(route: NavigationRoute) -> some View {
+    func makeView(route: NavigationRoute) -> some View {
         switch route {
         case .main:
-            let viewModel = {
-                let model = NavigationMainViewModel(coordinator: self)
-                mainViewModel = model
-                return model
-            }()
-            NavigationMainView(viewmodel: viewModel)
+            NavigationMainView(viewmodel: NavigationMainViewModel(coordinator: self))
 
         case .first:
-            let viewModel = {
-                let model = NavigationFirstViewModel(coordinator: self)
-                firstViewModel = model
-                return model
-            }()
-            NavigationFirstView(viewmodel: viewModel)
+            NavigationFirstView(viewmodel: NavigationFirstViewModel(coordinator: self))
 
         case .second:
-            let viewModel = {
-                let model = NavigationSecondViewModel(coordinator: self)
-                secondViewModel = model
-                return model
-            }()
-            NavigationSecondView(viewmodel: viewModel)
+            NavigationSecondView(viewmodel: NavigationSecondViewModel(coordinator: self))
         }
     }
 }
 
+struct NavigationDemoView: View {
+    @StateObject private var coordinator = NavigationCoordinator()
 
-
-
-@MainActor
-class NavigationDemoViewModel : ObservableObject {
-    
-    let coordinator: NavigationCoordinator = .init()
-    
-    init() {
-        
-    }
-}
-
-struct NavigationDemoView : View {
-    @ObservedObject var viewModel: NavigationDemoViewModel = .init()
-    
     var body: some View {
-        viewModel.coordinator.navigationRouter.view { route in
-            viewModel.coordinator.showNavigationView(route: route)
+        coordinator.navigationRouter.view { route in
+            coordinator.makeView(route: route)
         }
     }
 }
@@ -106,7 +70,7 @@ protocol MainCoordinator: AnyObject {
 
 class NavigationMainViewModel: ObservableObject {
     weak var coordinator: MainCoordinator?
-    
+
     init(coordinator: MainCoordinator) {
         self.coordinator = coordinator
     }
@@ -132,12 +96,11 @@ protocol FirstCoordinator: AnyObject {
 
 class NavigationFirstViewModel: ObservableObject {
     weak var coordinator: FirstCoordinator?
-    
+
     init(coordinator: FirstCoordinator) {
         self.coordinator = coordinator
     }
-    
-    
+
 }
 
 fileprivate struct NavigationFirstView : View {
@@ -148,12 +111,12 @@ fileprivate struct NavigationFirstView : View {
             Button("Push Second") {
                 viewmodel.coordinator?.pushSecond()
             }
-            
+
             Button("Pop First") {
                 viewmodel.coordinator?.popFirst()
             }
         }
-        
+
     }
 }
 
@@ -161,17 +124,15 @@ fileprivate struct NavigationFirstView : View {
 protocol SecondCoordinator: AnyObject {
     func popSecond()
     func popAll()
-   // func showSheet()
 }
 
 class NavigationSecondViewModel: ObservableObject {
     weak var coordinator: SecondCoordinator?
-    
+
     init(coordinator: SecondCoordinator) {
         self.coordinator = coordinator
     }
-    
-    
+
 }
 
 fileprivate struct NavigationSecondView : View {
@@ -179,40 +140,15 @@ fileprivate struct NavigationSecondView : View {
     var body: some  View {
         VStack {
             Text("View 2")
-            Button("Show Sheet") {
-               // model.coordinator.showSheet()
-            }
             Button("Pop Second") {
                 viewmodel.coordinator?.popSecond()
             }
             Button("Pop All") {
                 viewmodel.coordinator?.popAll()
             }
-            
-        }
-        
-    }
-}
 
-@MainActor
-protocol NavigationSheetCoordinator {
-    func pop()
-    func hideSheet()
-}
-
-fileprivate struct SheetView : View {
-    let coordinator: NavigationSheetCoordinator
-    var body: some  View {
-        VStack {
-            Text("Sheet")
-            Button("hide Sheet") {
-                coordinator.hideSheet()
-            }
-            Button("Pop") {
-                coordinator.pop()
-            }
         }
-        
+
     }
 }
 

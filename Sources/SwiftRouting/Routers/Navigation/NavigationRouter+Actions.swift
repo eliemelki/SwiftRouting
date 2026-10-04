@@ -5,48 +5,37 @@
 //  Created by Elie Melki on 03/04/2025.
 //
 
-/// Provides a convenient way for to push pop views.
-@MainActor
-protocol NavigationActions {
-    associatedtype T: Route
-    func setMain(_ route: T)
-    func push(_ route: T, animated: Bool)
-    func popLast(animated: Bool)
-    func popToRoot(animated: Bool)
-}
-
-extension NavigationRouter: NavigationActions {
-    
-    /// set the main view of a navigation
-    /// Parameters:
-    ///  - routable: Represent Routable object or any view that needs to be displayed.  check `Routable` for more info.
-    public func setMain(_ route: T) {
-        main = route
+extension NavigationRouter {
+    /// Replaces the root destination while preserving the pushed path.
+    /// - Parameter route: The new root destination.
+    public func setRoot(_ route: T) {
+        root = route
     }
-    
-    /// push a routable
-    /// Parameters:
-    ///  - routable:  Represent Routable object or any view that needs to be displayed. check `Routable` for more info.
+
+    /// Appends a new occurrence of a destination to the navigation path.
+    /// - Parameters:
+    ///   - route: The destination to push.
+    ///   - animated: Whether to allow the navigation transition to animate.
     public func push(_ route: T, animated: Bool = true) {
         runWithAnimation(animated: animated) {
-            paths.append(RouteEntry(route))
+            path.append(RouteEntry(route))
         }
     }
-    
-    /// pop last
+
+    /// Removes the last pushed destination. An empty path is unchanged.
+    /// - Parameter animated: Whether to allow the navigation transition to animate.
     public func popLast(animated: Bool = true) {
-        guard paths.count > 0 else {
-            return
-        }
+        guard !path.isEmpty else { return }
         runWithAnimation(animated: animated) {
-            paths.removeLast()
+            path.removeLast()
         }
     }
-    
-    /// pop to Root
+
+    /// Removes all pushed destinations and displays the current root.
+    /// - Parameter animated: Whether to allow the navigation transition to animate.
     public func popToRoot(animated: Bool = true) {
         runWithAnimation(animated: animated) {
-            paths.removeLast(self.paths.count)
+            path.removeLast(path.count)
         }
     }
 }

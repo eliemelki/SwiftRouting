@@ -1,103 +1,230 @@
 # SwiftRouting
 
+SwiftRouting separates SwiftUI destination views from the code that decides when
+to navigate, present a sheet, switch tabs, or change pages. It supports iOS 16 and
+later and uses Swift 6.
 
-SwiftRouting is a Library that abstract different sort of swiftui navigation/routing inside your app. It decouples your navigation logic from your buisness logic and handle internally through default provided implementation. This allows for more testable and decouple implementation.  
+## Routes and entries
 
-## Motivation 
+A `Route` is a `Hashable & Sendable` destination value. Use an enum or struct and
+build its view in a separate `@ViewBuilder` closure. Keep route values stable;
+changing a reference type's hash while it is stored can break selection or navigation.
 
-In swiftui, navigation is somehow coupled with ui and business logic layer. This makes a view or a buisness logic tied to a specific navigation. Therefore, the library provided a way where you can implement view and buisness logic seperatly standalone and leave it for a router layer to decide how and where to show it. This also allow for abstracting communication between different views. 
+```swift
+import SwiftUI
+import SwiftRouting
 
+enum AppRoute: Route {
+    case home
+    case settings
+    case detail(Int)
+}
 
-## Definition 
-
-Here is the list of the most import concepts to define. 
-1. `Routable` routable represents any swiftui view that needs to be displayed. 
-2. `Router`  is an abstract layer that takes a routable and knows how to display it. 
-
-
-Currently the Library provides 3 routers. Later on more can be added, but for now i covered the basic. Follow the concept of `Routable` you can have different sort of routers, like pageview, tab etc... 
-
-1. `SheetRouter`: Provides a convenient way to show hide a view as a sheet. You can show as full or partial. `SheetRouter` allows only one view (regardless if its fullscreen or partial) at a time and it make sure all calls are synchronised. In other words, if you call show twice, the second call will hide the existing and show the new one. The reason we synchronise is to avoid any UI issues and for proper dismiss handler calls.
-
-2. `SheetsRouter`: Provides a convenient way to show hide as many views as a sheet. `SheetsRouter` allows to stack views on top of each other presented as sheets, without having to worry if an existing sheet is present or not. It also sycnrhonise all calls. In other words, if you try to show 2 views at the same time, It will present both views sequantially.
- 
-3. `NavigationRouter`: Provides a convenient way for to push pop views. 
-
-
-Routers are also themselves Routables. For example you need to create a PageRouter (display view by sliding left/right from one view to another), where each page has a NavigationRouter. 
-
-The core concept of this library is routable. Routers on the other hands  declares the type of navigation and takes and return routable. Internally the Routers knows how to display and hide the views. Routable are basically view factory, which has one job which is to return an instance of the view. It also must comform to Identifiable and Hashable.
-
-## Create a Routable 
-
-As described above Routable is simply a view factory that is identifiable and hashable. It is used by Coordinators to show/hide. When you implement a view. In order to display it, you will need to create a corresponding routable that knows how to create your view. The rest is left for router. 
-
-Example. 
-
- ```
-  // Assume you have a TestView. We want to make this view Routable. Meaning we either needs to show it as sheet or maybe push on navigation
- struct TestView : View {
-     var body: some View {
-         VStack {
-             Text("Base")
-         }
-     }
- }
-  //To make it Routable you will need to create an instance that comforms to Routable and implement createView to return TestView.
-  //We will also needs to make it identifiable and hashable. We used below HashableByType which works for class objects.
- class TestViewRoutable : Routable, HashableByType {
-     func createView() -> some View {
-         return TestView()
-     }
- }
- ```
- 
- Another way to create routable is to use `RoutableFactory`. `RoutableFactory` is simply a helper, that takes a closure that returns a view and implement Routable itself. 
- 
- ```
- let routable = RoutableFactory {
-    return TestView()
- }
- ```
- 
- 
- ## Usage. 
- 
- Now that we have a built up an understanding of the library we can now learn how to use it. It is best to show by example. 
- 
-We will be using Coordinator Pattern in our examples but you dont have to. 
-- Router: Knows exactly how to display a routable.
-- Coordinator: Abstract the navigation of routable. 
-   
- 
- ### SheetRouter
- 
-Have a look at [SheetRouterDemo](Sources/SwiftRouting/Routers/Sheets/SheetRouter/SheetRouterDemo.swift) 
-
-### SheetsRouter
-
-Have a look at [SheetsRouterDemo](Sources/SwiftRouting/Routers/Sheets/SheetsRouter/SheetsRouterDemo.swift) 
-
-### NavigationRouter
-
-Have a look at [NavigationRouterDemo](Sources/SwiftRouting/Routers/Navigation/NavigationRouterDemo.swift) 
-
-
-### Notes
-
-1. Retaining Cycle
-
-Be careful of retaining cycle when creating `Routable`. Basically our router implementations strong hold reference of routable instance.  
-
-If for example you have a parent Coordinator that has strong reference for our built in router, and you want to pass the parent Coordinator to your routable, in order to know how to navigate, make sure you weakly retain the parent coordinator reference in your routable, otherwise you will create a retaining cycle. 
-```
-ParentCoordinator (Hold strong reference)-> SheetRouter (Hold strong routable)-> Routable (Holds a strong reference of ParentCoordinator) eventually causing a retain cycle. 
+@MainActor
+@ViewBuilder
+func destination(for route: AppRoute) -> some View {
+    switch route {
+    case .home: Text("Home")
+    case .settings: Text("Settings")
+    case .detail(let id): Text("Detail \(id)")
+    }
+}
 ```
 
-2. Hide Sheets on iOS 17 with disabled animation
+`RouteEntry<T>` represents one occurrence of a route. Each new entry receives a
+fresh UUID. Compare `entry.route` for destination equality and `entry.id` for
+occurrence identity. Entry equality and hashing include both fields. Repeated
+routes can therefore appear independently in navigation paths, sheets, tabs, and pages.
 
-Hide sheets on iOS 17 with disabled animation might not work properly. Regardless of our code base, even when using simple code with transaction disable animation on sheets, seems to have an issue with iOS 17.
+Routers are main-actor observable objects. Own them in a coordinator or with
+`@StateObject`; the router views observe an existing instance. Typed view builders
+support different destination view types without view erasure. Routers store route
+values; the host view supplies their destination views.
 
-### Future works. 
+## Routers
 
-Add more routers such as Tab, PageView, Carousel etc.... 
+| Router | Behavior |
+| --- | --- |
+| `NavigationRouter<T>` | A root destination with a stack of pushed entries. |
+| `SheetRouter<T>` | One partial sheet or full-screen cover; showing another replaces it. |
+| `SheetsRouter<T>` | A stack of partial sheets and full-screen covers. |
+| `TabRouter<T>` | A fixed collection of tabs with a selected entry. |
+| `PageRouter<T>` | A fixed collection of swipeable pages with a selected entry. |
+
+All five routers expose `view(...)` to build a host view. Sheet routers also have
+view modifiers for attaching their presenters to existing content.
+
+### Navigation
+
+```swift
+@MainActor
+struct NavigationExample: View {
+    @StateObject private var router = NavigationRouter<AppRoute>(root: .home)
+
+    var body: some View {
+        router.view { route in
+            destination(for: route)
+        }
+    }
+}
+```
+
+- `root` is the destination below the pushed stack.
+- `path` contains pushed `RouteEntry` values. SwiftUI updates it when the user goes back.
+- `push(_:animated:)` appends a new occurrence, even when the route repeats.
+- `popLast(animated:)` removes the last entry; an empty path is unchanged.
+- `popToRoot(animated:)` removes every pushed entry.
+- `setRoot(_:)` replaces the root while preserving the path. Call `popToRoot()`
+  separately when you also want to clear the stack.
+
+See [NavigationRouterDemo](Sources/SwiftRouting/Routers/Navigation/NavigationRouterDemo.swift).
+
+### Single sheet
+
+```swift
+@MainActor
+struct SheetExample: View {
+    @StateObject private var router = SheetRouter<AppRoute>()
+
+    var body: some View {
+        Button("Show settings") {
+            router.show(.settings, onDismiss: { print("Settings dismissed") })
+        }
+        .sheetRouterView(router) { route in
+            destination(for: route)
+        }
+    }
+}
+```
+
+`show(_:sheetType:animated:onDismiss:)` presents a route as `.partial` by default,
+or as `.fullScreen`. If a presentation already exists, the router waits for its
+dismissal callback before assigning a new entry. `onDismiss` runs once for each
+presentation, including when it is replaced.
+
+The async overload returns the new entry after assigning the presentation binding;
+it does not wait for the new presentation animation to finish. Async
+`hide(animated:)` waits for the dismissal callback. Overloads without `await`
+schedule the same actions in tasks and return immediately.
+
+```swift
+// Inside a main-actor async function:
+let entry = await router.show(.detail(42), sheetType: .fullScreen)
+let isCurrentEntry = router.isDisplaying(entry)
+await router.hide(animated: false)
+```
+
+`fullScreenEntry` and `partialEntry` expose the current presentation entries.
+`isPresentingSheet` and `presentedSheetType` reflect those bindings. They become
+false/nil when dismissal begins, before its animation finishes.
+
+Attach `sheetRouterView(_:makeView:)` or the standalone `router.view(makeView:)`
+so SwiftUI can deliver the dismissal callbacks that queued actions await. Use one
+presentation host per single-sheet router.
+
+See [SheetRouterDemo](Sources/SwiftRouting/Routers/Sheets/SheetRouter/SheetRouterDemo.swift).
+
+### Stacked sheets
+
+```swift
+@MainActor
+struct StackedSheetsExample: View {
+    @StateObject private var router = SheetsRouter<AppRoute>()
+
+    var body: some View {
+        Button("Show detail") { router.show(.detail(42)) }
+            .sheetsRouterView(router) { route in
+                destination(for: route)
+            }
+    }
+}
+```
+
+- `show(_:sheetType:animated:onDismiss:)` adds a presentation above the current stack.
+- `replace(_:sheetType:animated:onDismiss:)` dismisses the top sheet, waits for its
+  callback, then presents a replacement. With an empty stack, it behaves like `show`.
+- `hide(animated:)` dismisses the top sheet.
+- `hide(index:animated:)` dismisses the sheet at a zero-based position from the
+  bottom, along with every sheet above it. Invalid indices do nothing.
+- `hide(entry:animated:)` dismisses an exact occurrence and every sheet above it.
+  Entries from another router or an earlier presentation do nothing.
+- `hideAll(animated:)` dismisses all sheets.
+
+Dismissal runs from top to bottom and waits for each callback. Presentation actions
+return after assigning their entries, before their presentation animations finish.
+The async `show` and `replace` overloads return an optional entry; nil means the
+router was unavailable when its queued action ran. Synchronous overloads schedule
+a task and return immediately. Attach a stacked-sheet host to deliver callbacks.
+
+See [SheetsRouterDemo](Sources/SwiftRouting/Routers/Sheets/SheetsRouter/SheetsRouterDemo.swift).
+
+### Tabs
+
+```swift
+@MainActor
+struct TabsExample: View {
+    @StateObject private var router = TabRouter<AppRoute>(tabs: [.home, .settings])
+
+    var body: some View {
+        router.view { route in
+            destination(for: route)
+        } makeLabel: { route in
+            switch route {
+            case .home: Label("Home", systemImage: "house")
+            case .settings: Label("Settings", systemImage: "gearshape")
+            case .detail: Label("Detail", systemImage: "info.circle")
+            }
+        }
+    }
+}
+```
+
+`tabs` contains stable entries in display order. `selection` changes when the user
+taps a tab or when you call `select(_:animated:)` or `select(index:animated:)`.
+Select by route to choose its first occurrence, or by entry/index to choose an
+exact occurrence. Unknown routes, foreign entries, and invalid indices do nothing.
+
+The initializer accepts `selected:`. Nil or an unknown route selects the first
+entry. An empty collection has nil selection. Tabs are fixed after initialization.
+
+See [TabRouterDemo](Sources/SwiftRouting/Routers/Tab/TabRouterDemo.swift).
+
+### Pages
+
+```swift
+@MainActor
+struct PagesExample: View {
+    @StateObject private var router = PageRouter<AppRoute>(pages: [.home, .settings])
+
+    var body: some View {
+        router.view(indexDisplayMode: .never) { route in
+            destination(for: route)
+        }
+    }
+}
+```
+
+`pages` contains stable entries in display order. Swipes and programmatic selection
+update `selection`. Selection follows the same rules as `TabRouter`, including
+`selected:`, empty collections, repeated routes, and invalid requests.
+
+`next(animated:)` and `previous(animated:)` move one page and stop at the ends.
+Page indicators use `.automatic` by default; `indexDisplayMode:` also accepts
+`.always` and `.never`. An empty page collection renders no pager.
+
+See [PageRouterDemo](Sources/SwiftRouting/Routers/Page/PageRouterDemo.swift).
+
+## Ownership and animation
+
+Keep coordinators and view models out of route values where possible. A router
+retains its routes and active dismissal callbacks. If a callback captures the
+coordinator that owns the router, use a weak capture when needed to avoid a cycle.
+View builders should construct destination views without mutating router state.
+
+`animated: false` disables animations in the update transaction. `animated: true`
+allows the enclosing animation or SwiftUI presentation system to animate; it does
+not supply a custom animation curve.
+
+`SerialQueue` executes async main-actor operations one at a time. An operation must
+not await another operation on the same queue, since the nested operation cannot
+start until the current one completes.

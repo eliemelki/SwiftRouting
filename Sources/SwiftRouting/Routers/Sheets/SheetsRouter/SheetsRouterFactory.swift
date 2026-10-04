@@ -1,13 +1,16 @@
 import SwiftUI
 
+/// Creates single-sheet presenters for a typed presentation stack.
 @MainActor
 protocol SheetsRouterFactory<T> {
+    /// The route type supported by every presenter.
     associatedtype T: Route
-    func instanceOfSheet() -> SheetRouter<T>
+    /// Creates an empty presenter with independent dismissal state.
+    func makeSheetRouter() -> SheetRouter<T>
 }
 
 struct DefaultSheetsRouterFactory<T: Route>: SheetsRouterFactory {
-    func instanceOfSheet() -> SheetRouter<T> {
+    func makeSheetRouter() -> SheetRouter<T> {
         SheetRouter<T>()
     }
 }

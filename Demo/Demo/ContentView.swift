@@ -10,8 +10,7 @@ import SwiftUI
 
 
  struct ContentView: View {
-    
-    @State var showSheet = false
+
     var body: some View {
         VStack {
             VStack {
@@ -20,7 +19,7 @@ import SwiftUI
             }
             .frame(maxWidth: .infinity)
             .border(Color.black)
-            
+
             VStack {
                 Text("Sheets Demo")
                 SheetsDemoView()
@@ -31,6 +30,20 @@ import SwiftUI
                 Text("Navigation Demo")
                 NavigationDemoView()
             }
+            .border(Color.black)
+
+            VStack {
+                Text("Tab Demo")
+                TabDemoView()
+            }
+            .frame(height: 180)
+            .border(Color.black)
+
+            VStack {
+                Text("Page Demo")
+                PageDemoView()
+            }
+            .frame(height: 180)
             .border(Color.black)
         }
     }

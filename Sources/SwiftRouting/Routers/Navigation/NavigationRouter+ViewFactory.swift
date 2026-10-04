@@ -1,18 +1,9 @@
-//
-//  NavigationRouter+ViewFactory.swift
-//  SwiftRouting
-//
-//  Created by Elie Melki on 03/04/2025.
-//
-
 import SwiftUI
 
-// MARK: - NavigationRouter - Routable
-
-///NavigationRouter is also Routable
 extension NavigationRouter {
-    
-    ///Create SheetsRouteView
+
+    /// Creates a navigation stack for this router using typed destination views.
+    /// - Parameter makeView: Builds the view for each route on the main actor.
     public func view<V: View>(@ViewBuilder makeView: @escaping @MainActor (T) -> V) -> NavigationRouterView<T, V> {
         return NavigationRouterView<T,V>(router: self, makeView: makeView)
     }

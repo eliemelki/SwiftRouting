@@ -7,12 +7,11 @@
 
 import SwiftUI
 
-
 enum StackedSheetRoute: Route {
     case first, second, replacedSecond, third
 
     @MainActor @ViewBuilder
-    func createView(coordinator: SheersCordinator) -> some View {
+    func makeView(coordinator: SheetsCoordinator) -> some View {
         switch self {
         case .first: TestView1(coordinator: coordinator)
         case .second: TestView2(coordinator: coordinator)
@@ -23,7 +22,7 @@ enum StackedSheetRoute: Route {
 }
 
 @MainActor
-class SheersCordinator: ObservableObject {
+class SheetsCoordinator: ObservableObject {
     let sheetsRouter = SheetsRouter<StackedSheetRoute>()
     var secondSheet: RouteEntry<StackedSheetRoute>?
 
@@ -50,46 +49,46 @@ class SheersCordinator: ObservableObject {
     func hideLast() {
         sheetsRouter.hide()
     }
-    
+
     func backToFirst() {
-        
+
         guard let secondSheet else { return }
-        sheetsRouter.hide(routable: secondSheet)
+        sheetsRouter.hide(entry: secondSheet)
     }
-    
+
     func hide() {
         sheetsRouter.hideAll(animated: false)
     }
 }
 
 struct SheetsDemoView: View {
-    @StateObject var appCordinator = SheersCordinator()
-    
+    @StateObject var coordinator = SheetsCoordinator()
+
     var body: some View {
         VStack {
-            TestView(coordinator: appCordinator)
+            TestView(coordinator: coordinator)
         }
-        .sheetsRouterView(appCordinator.sheetsRouter) { route in
-            route.createView(coordinator: appCordinator)
+        .sheetsRouterView(coordinator.sheetsRouter) { route in
+            route.makeView(coordinator: coordinator)
         }
     }
 }
 
 fileprivate struct TestView : View {
-    let coordinator: SheersCordinator
+    let coordinator: SheetsCoordinator
     var body: some View {
         VStack {
             Text("Base")
             Button("Show Sheet1") {
                 coordinator.showFirstSheet()
             }
-     
+
         }
     }
 }
 
 fileprivate struct TestView1 : View {
-    let coordinator: SheersCordinator
+    let coordinator: SheetsCoordinator
     var body: some  View {
         VStack {
             Text("Sheet 1")
@@ -97,12 +96,12 @@ fileprivate struct TestView1 : View {
                 coordinator.showSecondSheet()
             }
         }
-        
+
     }
 }
 
 fileprivate struct TestView2 : View {
-    let coordinator: SheersCordinator
+    let coordinator: SheetsCoordinator
     var body: some  View {
         VStack {
             Text("Sheet 2")
@@ -113,12 +112,12 @@ fileprivate struct TestView2 : View {
                 coordinator.replaceSecondSheet()
             }
         }
-        
+
     }
 }
 
 fileprivate struct TestView2Replaced : View {
-    let coordinator: SheersCordinator
+    let coordinator: SheetsCoordinator
     var body: some  View {
         VStack {
             Text("Sheet 2 Replaced")
@@ -126,12 +125,12 @@ fileprivate struct TestView2Replaced : View {
                 coordinator.showThirdSheet()
             }
         }
-        
+
     }
 }
 
 fileprivate struct TestView3 : View {
-    let coordinator: SheersCordinator
+    let coordinator: SheetsCoordinator
     var body: some  View {
         VStack {
             Text("Sheet 3")
@@ -141,12 +140,12 @@ fileprivate struct TestView3 : View {
             Button("Dissmis Last Sheet") {
                 coordinator.hideLast()
             }
-            
+
             Button("Back to first") {
                 coordinator.backToFirst()
             }
         }
-        
+
     }
 }
 

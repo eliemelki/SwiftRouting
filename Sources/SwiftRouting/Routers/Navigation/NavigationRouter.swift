@@ -6,19 +6,23 @@
 //
 
 import SwiftUI
-import Combine
 
-///Allow for pushing and poping views.
-///It use internally Navigation stack and have a NavigationPath.
-///Whenever push or pop is called the router add/remove the routable to the path allowing to add push/pop the view.
+/// Coordinates a root destination and a typed navigation path.
+///
+/// Each push creates a new entry, allowing the same route to appear more than once.
+/// Attach `view(makeView:)` to render the root and pushed destinations.
 @MainActor
 public class NavigationRouter<T: Route>: ObservableObject, Sendable {
-    
-    @Published var paths: [RouteEntry<T>]
-    @Published var main: T
-    
-    public init(main: T) {
-        self.paths = []
-        self.main = main
+    /// Pushed destinations, ordered from the root toward the visible destination.
+    /// SwiftUI updates this array when the user navigates back.
+    @Published public internal(set) var path: [RouteEntry<T>]
+    /// The destination displayed below the pushed path.
+    @Published public internal(set) var root: T
+
+    /// Creates a router with a root destination and an empty path.
+    /// - Parameter root: The initial root destination.
+    public init(root: T) {
+        self.path = []
+        self.root = root
     }
 }

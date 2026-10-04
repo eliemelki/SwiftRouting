@@ -1,99 +1,80 @@
 //
-//  SheetActions.swift
+//  SheetRouter+Actions.swift
 //  SwiftRouting
 //
 //  Created by Elie Melki on 03/04/2025.
 //
 
-// MARK: - SheetActions
-
-@MainActor
-protocol SheetActions {
-    associatedtype T: Route
-    @discardableResult
-    func show(_ route:T, sheetType: SheetType, animated: Bool, dismissHandler:  SheetDismissHandler?) async -> RouteEntry<T>
-    func hide(animated: Bool) async
-    func hasSheetDisplayed() -> Bool
-    func isDisplaying(_ route: RouteEntry<T>) -> Bool
-    func sheetType() -> SheetType?
-}
-
-
-// MARK: - SheetRouter - SheetActions
-extension SheetRouter: SheetActions {
-    /// Hide a sheet sheet sycnhronusly
-    /// - Parameters:
-    ///   - animated: animate sheet showing
-    ///
-    ///
+extension SheetRouter {
+    /// Dismisses the current presentation and waits for its dismissal callback.
+    /// Returns immediately when there is no active presentation.
+    /// - Parameter animated: Whether to allow the dismissal transition to animate.
     public func hide(animated: Bool = true) async {
         await queue.execute { @MainActor [weak self] in
-            await self?._hide(animated: animated)
+            await self?.hidePresentation(animated: animated)
         }
     }
-   
-    /// Show a sheet using async
+
+    /// Dismisses any existing sheet, then assigns a new presentation entry.
+    ///
+    /// Calls are serialized. This method waits for the previous dismissal but
+    /// returns after assigning the new entry, before its presentation animation finishes.
+    /// Attach a sheet router view so SwiftUI can deliver dismissal callbacks.
     /// - Parameters:
-    ///   - route: The destination to display.
-    ///   - sheetType: how to show sheet wether full or partial.
-    ///   - animated: animate sheet showing
-    ///   - dismissHandler: callback when sheet is dismissed. This get called when automatically or manually hiding the sheet. Manually as per calling hide explicitly.
-    /// - Returns: The unique entry for this presentation.
+    ///   - route: The destination to present.
+    ///   - sheetType: A partial sheet or a full-screen cover.
+    ///   - animated: Whether to allow dismissal and presentation animations.
+    ///   - onDismiss: Called once when this presentation is dismissed, including replacement.
+    /// - Returns: The unique entry assigned to this presentation.
     @discardableResult
-    public func show(_ route:T, sheetType: SheetType = .partial, animated: Bool = true, dismissHandler:  SheetDismissHandler? = nil) async -> RouteEntry<T> {
+    public func show(_ route: T, sheetType: SheetType = .partial, animated: Bool = true,
+                     onDismiss: SheetDismissHandler? = nil) async -> RouteEntry<T> {
         switch sheetType {
         case .fullScreen:
-            await self.showFull(route, animated: animated, dismissHandler: dismissHandler)
+            await showFullScreen(route, animated: animated, onDismiss: onDismiss)
         case .partial:
-            await self.showPartial(route, animated: animated, dismissHandler: dismissHandler)
+            await showPartial(route, animated: animated, onDismiss: onDismiss)
         }
     }
-    
-    func hasSheetDisplayed() -> Bool {
-        return fullRoutable != nil || partialRoutable != nil
+
+    /// Whether a sheet or full-screen cover has a non-nil presentation entry.
+    /// Becomes false when dismissal begins; it does not track animation completion.
+    public var isPresentingSheet: Bool {
+        fullScreenEntry != nil || partialEntry != nil
     }
-    
-    func isDisplaying(_ routable: RouteEntry<T>) -> Bool {
-        return fullRoutable == routable || partialRoutable == routable
+
+    /// Checks whether this exact occurrence is the current presentation entry.
+    /// - Parameter entry: The occurrence returned by `show`.
+    /// - Returns: Whether either presentation binding contains the entry.
+    public func isDisplaying(_ entry: RouteEntry<T>) -> Bool {
+        fullScreenEntry == entry || partialEntry == entry
     }
-    
-    
-    func sheetType() -> SheetType? {
-        if fullRoutable != nil {
-            return .fullScreen
-        } else if partialRoutable != nil {
-            return .partial
-        }
+
+    /// The type of the current presentation entry, or nil when both bindings are empty.
+    public var presentedSheetType: SheetType? {
+        if fullScreenEntry != nil { return .fullScreen }
+        if partialEntry != nil { return .partial }
         return nil
     }
 }
 
-// MARK: - SheetRouter - Helpers
-
 public extension SheetRouter {
-    /// /// Same as Hide async but it wraps in a Task so we dont await.
-    /// - Parameters:
-    ///   - animated: animate sheet showing
-    ///
-    ///
-    func hide(animated: Bool = true)  {
-        Task {
-            await self.hide(animated: animated)
-        }
+    /// Schedules dismissal in a task and returns without waiting.
+    /// Use the async overload to wait for the dismissal callback.
+    /// - Parameter animated: Whether to allow the dismissal transition to animate.
+    func hide(animated: Bool = true) {
+        Task { await self.hide(animated: animated) }
     }
-   
-    /// Same as Show async but it wraps in a Task so we dont await.
-    /// - Parameters:
-    ///   - route: The destination to display.
-    ///   - sheetType: how to show sheet wether full or partial.
-    ///   - animated: animate sheet showing
-    ///   - dismissHandler: callback when sheet is dismissed. This get called when automatically or manually hiding the sheet. Manually as per calling hide explicitly.
 
-    func show(_ route:T, sheetType: SheetType = .partial, animated: Bool = true, dismissHandler:  SheetDismissHandler? = nil) {
-        Task {
-            await self.show(route, sheetType: sheetType, animated: animated, dismissHandler: dismissHandler)
-        }
+    /// Schedules a presentation in a task and returns without waiting.
+    /// Use the async overload to receive the presentation entry.
+    /// - Parameters:
+    ///   - route: The destination to present.
+    ///   - sheetType: A partial sheet or a full-screen cover.
+    ///   - animated: Whether to allow dismissal and presentation animations.
+    ///   - onDismiss: Called once when this presentation is dismissed.
+    func show(_ route: T, sheetType: SheetType = .partial, animated: Bool = true,
+              onDismiss: SheetDismissHandler? = nil) {
+        Task { await self.show(route, sheetType: sheetType, animated: animated, onDismiss: onDismiss) }
     }
-    
 }
-

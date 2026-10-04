@@ -1,19 +1,11 @@
-//
-//  SheetRouterDemo.swift
-//  SwiftRouting
-//
-//  Created by Elie Melki on 03/04/2025.
-//
-
 import SwiftUI
 
-
-enum SheetRoutable: String, Route {
+enum SheetDemoRoute: String, Route {
 
     case sheet1, sheet2
 
     @ViewBuilder
-    func createView(coordinator: SheetCoordinator) -> some View {
+    func makeView(coordinator: SheetCoordinator) -> some View {
         switch self {
         case .sheet1:
             SheetView1(coordinator: coordinator)
@@ -25,36 +17,24 @@ enum SheetRoutable: String, Route {
 
 @MainActor
 class SheetCoordinator : ObservableObject {
-    let sheetRouter = SheetRouter<SheetRoutable>()
-
-    var value = 0
+    let sheetRouter = SheetRouter<SheetDemoRoute>()
 
     func showSheet1() {
-        sheetRouter.show(SheetRoutable.sheet1, sheetType: .partial, animated: false) {
+        sheetRouter.show(SheetDemoRoute.sheet1, sheetType: .partial, animated: false) {
             print("dismissed SheetView1")
         }
     }
 
     func hideSheet1() {
-        value += 1
-        //sheetRouter.hide(animated: value % 2 == 0)
         sheetRouter.hide()
     }
 
     func replaceSheet1BySheet2() {
 
-        value += 1
-//        sheetRouter.show(routable, sheetType: .fullScreen,animated: value % 2 == 0) {
-//            print("dismiss SheetView2")
-//        }
-        sheetRouter.show(SheetRoutable.sheet2, sheetType: .fullScreen, animated: true) {
-            print("dismiss SheetView2")
-        }
+        sheetRouter.show(.sheet2, sheetType: .fullScreen)
     }
 
     func hideSheet2() {
-        value += 1
-        //sheetRouter.hide(animated: value % 2 == 0)
         sheetRouter.hide(animated: false)
     }
 }
@@ -66,7 +46,7 @@ struct SheetDemoView : View {
         VStack {
             SheetBase(coordinator: coordinator)
         }.sheetRouterView(coordinator.sheetRouter) { route in
-            route.createView(coordinator: coordinator)
+            route.makeView(coordinator: coordinator)
         }
     }
 }
@@ -112,8 +92,6 @@ fileprivate struct SheetView2 : View {
 
     }
 }
-
-
 
 #Preview {
     SheetDemoView()
