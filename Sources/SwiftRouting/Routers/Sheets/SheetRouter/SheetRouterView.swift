@@ -7,40 +7,44 @@
 import SwiftUI
 
 
-public struct SheetRouterViewModifier : ViewModifier {
+public struct SheetRouterViewModifier<T: Route, V: View> : ViewModifier {
     
-    @ObservedObject var router: SheetRouter
+    @ObservedObject var router: SheetRouter<T>
+    private let makeView: @MainActor (T) -> V
     
-    init(router: SheetRouter) {
+    public init(router: SheetRouter<T>, @ViewBuilder makeView: @escaping @MainActor (T) -> V) {
         self.router = router
+        self.makeView = makeView
     }
     
     public func body(content: Content) -> some View {
         content
-            .fullScreenCover(item: $router.fullRoutable, onDismiss: self.router.dismissFullScreen) { routable in
-                routable.createView()
-            }.sheet(item: $router.partialRoutable, onDismiss: self.router.dismissPartialScreen) { routable in
-                routable.createView()
+            .fullScreenCover(item: $router.fullRoutable, onDismiss: self.router.dismissFullScreen) { entry in
+                makeView(entry.route)
+            }.sheet(item: $router.partialRoutable, onDismiss: self.router.dismissPartialScreen) { entry in
+                makeView(entry.route)
             }
     }
 }
 
 
-extension View {
-    func sheetRouterView(_ router: SheetRouter) -> some View {
-        modifier(SheetRouterViewModifier(router: router))
+public extension View {
+    func sheetRouterView<T: Route, V: View>(_ router: SheetRouter<T>, @ViewBuilder makeView: @escaping @MainActor (T) -> V) -> some View {
+        modifier(SheetRouterViewModifier(router: router, makeView: makeView))
     }
 }
 
-public struct SheetRouterView : View {
+public struct SheetRouterView<T: Route, V: View> : View {
     
-    @ObservedObject var router: SheetRouter
+    @ObservedObject var router: SheetRouter<T>
+    private let makeView: @MainActor (T) -> V
     
-    init(router: SheetRouter) {
+    public init(router: SheetRouter<T>, @ViewBuilder makeView: @escaping @MainActor (T) -> V) {
         self.router = router
+        self.makeView = makeView
     }
     
     public var body: some View {
-        VStack{}.sheetRouterView(router)
+        VStack{}.sheetRouterView(router, makeView: makeView)
     }
 }

@@ -9,19 +9,19 @@ import Testing
 
 @MainActor
 @Test func testNavigationRouter() async throws {
-    let router = NavigationRouter()
-    #expect(router.main == nil)
+    let router = NavigationRouter(main: mockRoutable)
+    #expect(router.main == mockRoutable)
     #expect(router.paths.count == 0)
     
     router.setMain(mockRoutable)
-    #expect(router.main == AnyRoutable(mockRoutable))
+    #expect(router.main == mockRoutable)
     #expect(router.paths.count == 0)
     
     
     router.push(mockRoutable)
-    #expect(router.main == AnyRoutable(mockRoutable))
+    #expect(router.main == mockRoutable)
     #expect(router.paths.count == 1)
-    #expect(router.paths[0] == AnyRoutable(mockRoutable))
+    #expect(router.paths[0].route == mockRoutable)
     
     router.popLast()
     router.popLast()

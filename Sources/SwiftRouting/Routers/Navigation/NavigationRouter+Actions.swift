@@ -8,8 +8,9 @@
 /// Provides a convenient way for to push pop views.
 @MainActor
 protocol NavigationActions {
-    func setMain<T: Routable>(_ routable: T)
-    func push<T: Routable>(_ routable: T, animated: Bool)
+    associatedtype T: Route
+    func setMain(_ route: T)
+    func push(_ route: T, animated: Bool)
     func popLast(animated: Bool)
     func popToRoot(animated: Bool)
 }
@@ -19,16 +20,16 @@ extension NavigationRouter: NavigationActions {
     /// set the main view of a navigation
     /// Parameters:
     ///  - routable: Represent Routable object or any view that needs to be displayed.  check `Routable` for more info.
-    public func setMain<T: Routable>(_ routable: T) {
-        main = AnyRoutable(routable)
+    public func setMain(_ route: T) {
+        main = route
     }
     
     /// push a routable
     /// Parameters:
     ///  - routable:  Represent Routable object or any view that needs to be displayed. check `Routable` for more info.
-    public func push<T: Routable>(_ routable: T, animated: Bool = true) {
+    public func push(_ route: T, animated: Bool = true) {
         runWithAnimation(animated: animated) {
-            paths.append(AnyRoutable(routable))
+            paths.append(RouteEntry(route))
         }
     }
     

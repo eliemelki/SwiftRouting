@@ -1,78 +1,64 @@
-//
-//  SheetsRouterView.swift
-//  SwiftRouting
-//
-//  Created by Elie Melki on 24/03/2025.
-//
 import SwiftUI
 
-public struct SheetsRouterViewModifier: ViewModifier {
-    @ObservedObject var router: SheetsRouter
-    
-    public init(router: SheetsRouter) {
+public struct SheetsRouterViewModifier<T: Route, V: View>: ViewModifier {
+    @ObservedObject var router: SheetsRouter<T>
+    private let makeView: @MainActor (T) -> V
+
+    public init(router: SheetsRouter<T>, @ViewBuilder makeView: @escaping @MainActor (T) -> V) {
         self.router = router
+        self.makeView = makeView
     }
-    
+
     public func body(content: Content) -> some View {
-        content.buildSheetsFor(sheets: router.sheets + [router.placeholderSheet])
+        content.modifier(NestedSheetRouterViewModifier(
+            sheets: router.sheets + [router.placeholderSheet], makeView: makeView
+        ))
     }
 }
 
-extension View {
-    
-    public func sheetsRouterView(_ router: SheetsRouter) -> some View {
-        modifier(SheetsRouterViewModifier(router: router))
-    }
-    
-    @ViewBuilder
-    func buildSheetsFor(sheets: [Sheet]) -> some View {
-        if !sheets.isEmpty {
-            self.modifier(sheetFor(sheets: sheets))
-        } else {
-            self
-        }
-    }
-    
-    func sheetFor(sheets: [Sheet]) -> some ViewModifier {
-        var sheets = sheets
-        let sheet = sheets.removeFirst()
-        return sheet.createView { r in
-            AnyView(r.createView().buildSheetsFor(sheets: sheets))
-        }
+public extension View {
+    func sheetsRouterView<T: Route, V: View>(_ router: SheetsRouter<T>, @ViewBuilder makeView: @escaping @MainActor (T) -> V) -> some View {
+        modifier(SheetsRouterViewModifier(router: router, makeView: makeView))
     }
 }
 
+public struct SheetsRouterView<T: Route, V: View>: View {
+    @ObservedObject var router: SheetsRouter<T>
+    private let makeView: @MainActor (T) -> V
 
-public struct SheetsRouterView: View {
-    @ObservedObject var router: SheetsRouter
-    
-    public init(router: SheetsRouter) {
+    public init(router: SheetsRouter<T>, @ViewBuilder makeView: @escaping @MainActor (T) -> V) {
         self.router = router
+        self.makeView = makeView
     }
-    
+
     public var body: some View {
-        VStack{}.buildSheetsFor(sheets: router.sheets + [router.placeholderSheet])
+        VStack {}.sheetsRouterView(router, makeView: makeView)
     }
 }
 
+// A named recursive view keeps the nested presentation type finite without AnyView.
+struct NestedSheetRouterViewModifier<T: Route, V: View>: ViewModifier {
+    let sheets: [SheetRouter<T>]
+    let makeView: @MainActor (T) -> V
 
-struct NestedSheetRouterViewModifier<SheetContent: View> : ViewModifier {
-    
-    @ObservedObject var router: SheetRouter
-    var sheetContent: (AnyRoutable) -> SheetContent
-    
-    init(router: SheetRouter, content: @escaping (AnyRoutable) -> SheetContent) {
-        self.router = router
-        self.sheetContent = content
+    @ViewBuilder
+    func body(content: Content) -> some View {
+        if let sheet = sheets.first {
+            content.sheetRouterView(sheet) { route in
+                NestedSheetContent(route: route, sheets: Array(sheets.dropFirst()), makeView: makeView)
+            }
+        } else {
+            content
+        }
     }
-    
-    public func body(content: Content) -> some View {
-        content
-            .fullScreenCover(item: $router.fullRoutable, onDismiss: self.router.dismissFullScreen) { routable in
-                sheetContent(routable)
-            }
-            .sheet(item: $router.partialRoutable, onDismiss: self.router.dismissPartialScreen) { routable in
-                sheetContent(routable)
-            }
+}
+
+private struct NestedSheetContent<T: Route, V: View>: View {
+    let route: T
+    let sheets: [SheetRouter<T>]
+    let makeView: @MainActor (T) -> V
+
+    var body: some View {
+        makeView(route).modifier(NestedSheetRouterViewModifier(sheets: sheets, makeView: makeView))
     }
 }

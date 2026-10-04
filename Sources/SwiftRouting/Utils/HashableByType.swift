@@ -1,21 +1,21 @@
+////
+////  HashableByType.swift
+////  SwiftRouting
+////
+////  Created by Elie Melki on 08/03/2025.
+////
+//import Foundation
 //
-//  HashableByType.swift
-//  SwiftRouting
 //
-//  Created by Elie Melki on 08/03/2025.
+//public protocol HashableByType: Hashable {}
 //
-import Foundation
-
-
-public protocol HashableByType: Hashable {}
-
-extension HashableByType where Self: Identifiable {
-    
-    public func hash(into hasher: inout Hasher) {
-        hasher.combine(id)
-    }
-    
-    public static func == (lhs: Self, rhs: Self) -> Bool {
-        lhs.id == rhs.id
-    }
-}
+//extension HashableByType where Self: Identifiable {
+//    
+//    public func hash(into hasher: inout Hasher) {
+//        hasher.combine(id)
+//    }
+//    
+//    public static func == (lhs: Self, rhs: Self) -> Bool {
+//        lhs.id == rhs.id
+//    }
+//}

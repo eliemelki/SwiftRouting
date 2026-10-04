@@ -11,12 +11,14 @@ import Combine
 ///Allow for pushing and poping views.
 ///It use internally Navigation stack and have a NavigationPath.
 ///Whenever push or pop is called the router add/remove the routable to the path allowing to add push/pop the view.
-public class NavigationRouter: ObservableObject {
+@MainActor
+public class NavigationRouter<T: Route>: ObservableObject, Sendable {
     
-    @Published var paths: [AnyRoutable]
-    @Published var main: AnyRoutable?
+    @Published var paths: [RouteEntry<T>]
+    @Published var main: T
     
-    public init() {
+    public init(main: T) {
         self.paths = []
+        self.main = main
     }
 }

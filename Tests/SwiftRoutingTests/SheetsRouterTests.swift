@@ -172,3 +172,13 @@ import SwiftUI
     #expect(sheetsRouter.sheets.count == 0)
 }
 
+
+@MainActor
+@Test func testStackedSheetsDoNotRetainRouterThroughDismissHandler() async {
+    var router: SheetsRouter<TestRoute>? = SheetsRouter(factory: MockSheetsRouterFactory())
+    weak var sheet: SheetRouter<TestRoute>?
+    await router?.show(.first)
+    sheet = router?.sheets.first
+    router = nil
+    #expect(sheet == nil)
+}

@@ -14,17 +14,19 @@ public typealias SheetDismissHandler = () -> ()
 ///Basicall it internally add a placeholder for a fullScreenCover and a sheet.
 ///
 @MainActor
-public class SheetRouter : ObservableObject {
+public class SheetRouter<T: Route> : ObservableObject {
     
-    @Published var fullDismissHandler: SheetDismissHandler?
-    @Published var partialDismissHandler: SheetDismissHandler?
+    var fullDismissHandler: SheetDismissHandler?
+    var partialDismissHandler: SheetDismissHandler?
     
-    @Published private var dismissHandlerCompletion: SheetDismissHandler?
+    private var dismissHandlerCompletion: SheetDismissHandler?
     
-    @Published var fullRoutable: AnyRoutable?
-    @Published var partialRoutable: AnyRoutable?
+    @Published var fullRoutable: RouteEntry<T>?
+    @Published var partialRoutable: RouteEntry<T>?
     
    
+    private var activeSheetType: SheetType?
+
     var queue: SerialQueue = .init()
     
     public init() {
@@ -34,32 +36,28 @@ public class SheetRouter : ObservableObject {
 
 extension SheetRouter {
     
-    func dismiss(routable: AnyRoutable?, dismissHandler: SheetDismissHandler?)  {
-        defer {
-            let completion = dismissHandlerCompletion
-            fullDismissHandler = nil
-            partialDismissHandler = nil
-            dismissHandlerCompletion = nil
-            completion?()
-        }
-        
-        guard routable == nil else {
-            return
-        }
-        
+    func dismiss(route: RouteEntry<T>?, sheetType: SheetType, dismissHandler: SheetDismissHandler?)  {
+        guard activeSheetType == sheetType, route == nil else { return }
+        let completion = dismissHandlerCompletion
+        activeSheetType = nil
+        fullDismissHandler = nil
+        partialDismissHandler = nil
+        dismissHandlerCompletion = nil
         dismissHandler?()
+        completion?()
     }
     
     func _hide(animated: Bool) async {
-        await withCheckedContinuation { @MainActor [weak self] continuation in
-            self?._hide(animated: animated) {
+        await withCheckedContinuation { @MainActor continuation in
+            self._hide(animated: animated) {
                 continuation.resume()
             }
         }
     }
     
     func _hide(animated: Bool, completion: @escaping SheetDismissHandler) {
-        guard self.fullRoutable != nil || self.partialRoutable != nil else {
+        // A swipe clears the binding before onDismiss. Still wait for that callback.
+        guard activeSheetType != nil else {
             completion()
             return
         }
@@ -74,11 +72,12 @@ extension SheetRouter {
     }
     
     @discardableResult
-    func showPartial<T: Routable>(_ routable:T, animated: Bool, dismissHandler:  SheetDismissHandler? = nil) async -> AnyRoutable  {
-        let item = AnyRoutable(routable)
+    func showPartial(_ routable:T, animated: Bool, dismissHandler:  SheetDismissHandler? = nil) async -> RouteEntry<T>  {
+        let item = RouteEntry(routable)
         await queue.execute {
             await self._hide(animated: animated)
             self.runWithAnimation(animated: animated) {
+                self.activeSheetType = .partial
                 self.partialRoutable = item
                 self.partialDismissHandler = dismissHandler
             }
@@ -87,11 +86,12 @@ extension SheetRouter {
     }
   
     @discardableResult
-    func showFull<T: Routable>(_ routable:T, animated: Bool, dismissHandler:  SheetDismissHandler? = nil) async -> AnyRoutable  {
-        let item = AnyRoutable(routable)
+    func showFull(_ routable:T, animated: Bool, dismissHandler:  SheetDismissHandler? = nil) async -> RouteEntry<T>  {
+        let item = RouteEntry(routable)
         await queue.execute {
             await self._hide(animated: animated)
             self.runWithAnimation(animated: animated) {
+                self.activeSheetType = .fullScreen
                 self.fullRoutable = item
                 self.fullDismissHandler = dismissHandler
             }

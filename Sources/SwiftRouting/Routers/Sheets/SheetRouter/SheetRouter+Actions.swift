@@ -9,24 +9,24 @@
 
 @MainActor
 protocol SheetActions {
+    associatedtype T: Route
     @discardableResult
-    func show<T: Routable>(_ routable:T, sheetType: SheetType, animated: Bool, dismissHandler:  SheetDismissHandler?) async -> AnyRoutable
+    func show(_ route:T, sheetType: SheetType, animated: Bool, dismissHandler:  SheetDismissHandler?) async -> RouteEntry<T>
     func hide(animated: Bool) async
     func hasSheetDisplayed() -> Bool
-    func isDisplaying(_ routable: AnyRoutable) -> Bool
+    func isDisplaying(_ route: RouteEntry<T>) -> Bool
     func sheetType() -> SheetType?
 }
 
 
 // MARK: - SheetRouter - SheetActions
 extension SheetRouter: SheetActions {
-    
     /// Hide a sheet sheet sycnhronusly
     /// - Parameters:
     ///   - animated: animate sheet showing
     ///
     ///
-    public func hide(animated: Bool) async {
+    public func hide(animated: Bool = true) async {
         await queue.execute { @MainActor [weak self] in
             await self?._hide(animated: animated)
         }
@@ -34,18 +34,18 @@ extension SheetRouter: SheetActions {
    
     /// Show a sheet using async
     /// - Parameters:
-    ///   - routable: Represent Routable object or any view that needs to be displayed. . check `Routable` for more info.
+    ///   - route: The destination to display.
     ///   - sheetType: how to show sheet wether full or partial.
     ///   - animated: animate sheet showing
     ///   - dismissHandler: callback when sheet is dismissed. This get called when automatically or manually hiding the sheet. Manually as per calling hide explicitly.
-    /// - Returns: An  `AnyRoutable` the internal earse typed object of routable created internally.
+    /// - Returns: The unique entry for this presentation.
     @discardableResult
-    public func show<T: Routable>(_ routable:T, sheetType: SheetType, animated: Bool = true, dismissHandler:  SheetDismissHandler?) async -> AnyRoutable {
+    public func show(_ route:T, sheetType: SheetType = .partial, animated: Bool = true, dismissHandler:  SheetDismissHandler? = nil) async -> RouteEntry<T> {
         switch sheetType {
         case .fullScreen:
-            await self.showFull(routable, animated: animated, dismissHandler: dismissHandler)
+            await self.showFull(route, animated: animated, dismissHandler: dismissHandler)
         case .partial:
-            await self.showPartial(routable, animated: animated, dismissHandler: dismissHandler)
+            await self.showPartial(route, animated: animated, dismissHandler: dismissHandler)
         }
     }
     
@@ -53,8 +53,8 @@ extension SheetRouter: SheetActions {
         return fullRoutable != nil || partialRoutable != nil
     }
     
-    func isDisplaying(_ routable: AnyRoutable) -> Bool {
-        return fullRoutable === routable || partialRoutable === routable
+    func isDisplaying(_ routable: RouteEntry<T>) -> Bool {
+        return fullRoutable == routable || partialRoutable == routable
     }
     
     
@@ -84,14 +84,14 @@ public extension SheetRouter {
    
     /// Same as Show async but it wraps in a Task so we dont await.
     /// - Parameters:
-    ///   - routable: Represent Routable object or any view that needs to be displayed. . check `Routable` for more info.
+    ///   - route: The destination to display.
     ///   - sheetType: how to show sheet wether full or partial.
     ///   - animated: animate sheet showing
     ///   - dismissHandler: callback when sheet is dismissed. This get called when automatically or manually hiding the sheet. Manually as per calling hide explicitly.
 
-    func show<T: Routable>(_ routable:T, sheetType: SheetType, animated: Bool = true, dismissHandler:  SheetDismissHandler?) {
+    func show(_ route:T, sheetType: SheetType = .partial, animated: Bool = true, dismissHandler:  SheetDismissHandler? = nil) {
         Task {
-            await self.show(routable, sheetType: sheetType, animated: animated, dismissHandler: dismissHandler)
+            await self.show(route, sheetType: sheetType, animated: animated, dismissHandler: dismissHandler)
         }
     }
     

@@ -9,14 +9,8 @@ import SwiftUI
 
 extension ObservableObject {
     func runWithAnimation(animated: Bool, callback: () -> Void) {
-        if animated {
-            callback()
-        }else {
-            var transaction = Transaction(animation: .none)
-            transaction.disablesAnimations = true
-            withTransaction(transaction) {
-                callback()
-            }
-        }
+        var transaction = Transaction()
+        transaction.disablesAnimations = !animated
+        withTransaction(transaction, callback)
     }
 }

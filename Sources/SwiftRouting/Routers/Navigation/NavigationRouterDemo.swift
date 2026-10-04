@@ -1,134 +1,156 @@
 
 import SwiftUI
 
+enum NavigationRoute: Route {
+    case main
+    case first
+    case second
+}
+
 @MainActor
-class NavigationCoordinator :
-    ObservableObject,
-    MainCoordinator,
-    FirstCoordinator,
-    SecondCoordinator,
-    NavigationSheetCoordinator
-{
+class NavigationCoordinator: MainCoordinator,
+                             FirstCoordinator,
+                             SecondCoordinator {
     
-    let router = NavigationRouter()
-    let sheetsRouter = SheetsRouter()
+    let navigationRouter : NavigationRouter<NavigationRoute>
     
     init() {
-        setupMain()
-        
-    }
-    func setupMain() {
-        let routable = RoutableFactory { [unowned self] in
-            return NavigationMain(coordinator: self)
-        }
-        router.setMain(routable)
-        
+        navigationRouter = NavigationRouter<NavigationRoute>(main: .main)
     }
     
-    func dimissFirst() {
-        self.router.popLast()
-    }
     
     func pushFirst() {
-        let routable = RoutableFactory { [unowned self] in
-            return NavigationFirstView(coordinator: self)
-                .navigationBarBackButtonHidden(true)
-                .toolbar {
-                    ToolbarItem(placement: .topBarLeading) {
-                        Button(action: {
-                            self.dimissFirst()
-                        }) {
-                            Label("Back", systemImage: "arrow.left.circle")
-                        }
-                    }
-                }
-        }
-        router.push(routable)
+        self.navigationRouter.push(.first, animated: false)
     }
     
     func popFirst() {
-        router.popLast(animated: false)
+        self.navigationRouter.popLast(animated: false)
     }
     
     func pushSecond() {
-        let routable = RoutableFactory { [unowned self] in
-            return NavigationSecondView(coordinator: self)
-        }
-        
-        router.push(routable)
+        self.navigationRouter.push(.second)
     }
     
     func popSecond() {
-        router.popLast()
+        self.navigationRouter.popLast()
     }
     
     func popAll() {
-        router.popToRoot()
+        self.navigationRouter.popToRoot()
     }
     
-    func showSheet() {
-        let routable = RoutableFactory { [unowned self] in
-            return SheetView(coordinator: self)
+    
+    private var mainViewModel: NavigationMainViewModel?
+    private var firstViewModel: NavigationFirstViewModel?
+    private var secondViewModel: NavigationSecondViewModel?
+    
+ 
+    @MainActor
+    @ViewBuilder
+    func showNavigationView(route: NavigationRoute) -> some View {
+        switch route {
+        case .main:
+            let viewModel = {
+                let model = NavigationMainViewModel(coordinator: self)
+                mainViewModel = model
+                return model
+            }()
+            NavigationMainView(viewmodel: viewModel)
+
+        case .first:
+            let viewModel = {
+                let model = NavigationFirstViewModel(coordinator: self)
+                firstViewModel = model
+                return model
+            }()
+            NavigationFirstView(viewmodel: viewModel)
+
+        case .second:
+            let viewModel = {
+                let model = NavigationSecondViewModel(coordinator: self)
+                secondViewModel = model
+                return model
+            }()
+            NavigationSecondView(viewmodel: viewModel)
         }
-        sheetsRouter.show(routable)
     }
+}
+
+
+
+
+@MainActor
+class NavigationDemoViewModel : ObservableObject {
     
-    func pop() {
-        router.popLast()
-    }
+    let coordinator: NavigationCoordinator = .init()
     
-    func hideSheet() {
-        sheetsRouter.hide()
+    init() {
+        
     }
 }
 
 struct NavigationDemoView : View {
-    @ObservedObject var coordinator: NavigationCoordinator = .init()
+    @ObservedObject var viewModel: NavigationDemoViewModel = .init()
     
     var body: some View {
-        NavigationRouterView(router: coordinator.router)
-            .sheetsRouterView(coordinator.sheetsRouter)
+        viewModel.coordinator.navigationRouter.view { route in
+            viewModel.coordinator.showNavigationView(route: route)
+        }
     }
 }
 
 @MainActor
-protocol MainCoordinator {
+protocol MainCoordinator: AnyObject {
     func pushFirst()
 }
 
-fileprivate struct NavigationMain : View {
-    let coordinator: MainCoordinator
+class NavigationMainViewModel: ObservableObject {
+    weak var coordinator: MainCoordinator?
+    
+    init(coordinator: MainCoordinator) {
+        self.coordinator = coordinator
+    }
+}
+
+fileprivate struct NavigationMainView : View {
+    @ObservedObject var viewmodel: NavigationMainViewModel
     var body: some View {
         VStack {
             Text("Main")
             Button("Push First") {
-                var transaction = Transaction(animation: .none)
-                transaction.disablesAnimations = true
-                withTransaction(transaction) {
-                    coordinator.pushFirst()
-                }
+               viewmodel.coordinator?.pushFirst()
             }
         }
     }
 }
 
 @MainActor
-protocol FirstCoordinator {
+protocol FirstCoordinator: AnyObject {
     func popFirst()
     func pushSecond()
 }
 
+class NavigationFirstViewModel: ObservableObject {
+    weak var coordinator: FirstCoordinator?
+    
+    init(coordinator: FirstCoordinator) {
+        self.coordinator = coordinator
+    }
+    
+    
+}
+
 fileprivate struct NavigationFirstView : View {
-    let coordinator: FirstCoordinator
+    @ObservedObject var viewmodel: NavigationFirstViewModel
     var body: some  View {
         VStack {
             Text("View 1")
             Button("Push Second") {
-                coordinator.pushSecond()
+                viewmodel.coordinator?.pushSecond()
             }
             
             Button("Pop First") {
-                coordinator.popFirst()
+                viewmodel.coordinator?.popFirst()
             }
         }
         
@@ -136,25 +158,35 @@ fileprivate struct NavigationFirstView : View {
 }
 
 @MainActor
-protocol SecondCoordinator {
+protocol SecondCoordinator: AnyObject {
     func popSecond()
     func popAll()
-    func showSheet()
+   // func showSheet()
+}
+
+class NavigationSecondViewModel: ObservableObject {
+    weak var coordinator: SecondCoordinator?
+    
+    init(coordinator: SecondCoordinator) {
+        self.coordinator = coordinator
+    }
+    
+    
 }
 
 fileprivate struct NavigationSecondView : View {
-    let coordinator: SecondCoordinator
+    @ObservedObject var viewmodel: NavigationSecondViewModel
     var body: some  View {
         VStack {
             Text("View 2")
             Button("Show Sheet") {
-                coordinator.showSheet()
+               // model.coordinator.showSheet()
             }
             Button("Pop Second") {
-                coordinator.popSecond()
+                viewmodel.coordinator?.popSecond()
             }
             Button("Pop All") {
-                coordinator.popAll()
+                viewmodel.coordinator?.popAll()
             }
             
         }

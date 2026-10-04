@@ -11,16 +11,6 @@ import SwiftUI
 @testable import SwiftRouting
 
 @MainActor
-let mockRoutable = RoutableFactory() {
-    return Text("Hello")
-}
-
-@MainActor
-let mockRoutable2 = RoutableFactory() {
-    return Text("Hello")
-}
-
-@MainActor
 @Test func testSheetRouterInitialState() async throws {
     let sheetRouter = MockSheetRouter()
     #expect(!sheetRouter.hasSheetDisplayed())
@@ -110,7 +100,7 @@ let mockRoutable2 = RoutableFactory() {
     async let t3 = await task3.value
     let _ = await "\(t1) \(t2) \(t3)"
     #expect(dismissTrack == [1,2])
-    #expect(sheetRouter.proxy.fullRoutable == AnyRoutable(mockRoutable2))
+    #expect(sheetRouter.proxy.fullRoutable?.route == mockRoutable2)
     
     let task4 = Task {
         await sheetRouter.hide()
@@ -128,10 +118,10 @@ let mockRoutable2 = RoutableFactory() {
 
 extension MockSheetRouter {
     
-    func expectFull<T: Routable>(_ routable: T) {
+    func expectFull(_ routable: TestRoute) {
         let fullRoutable = self.proxy.fullRoutable
         #expect(fullRoutable != nil)
-        #expect(AnyRoutable(routable) == fullRoutable)
+        #expect(routable == fullRoutable?.route)
         #expect(self.sheetType() == .fullScreen)
         
         let partialRoutable = self.proxy.partialRoutable
@@ -139,13 +129,54 @@ extension MockSheetRouter {
         #expect(self.hasSheetDisplayed())
     }
     
-    func expectPartial<T: Routable>(_ routable: T) {
+    func expectPartial(_ routable: TestRoute) {
         let partialRoutable = self.proxy.partialRoutable
         #expect(partialRoutable != nil)
-        #expect(AnyRoutable(routable) == partialRoutable)
+        #expect(routable == partialRoutable?.route)
         
         let fullRoutable = self.proxy.fullRoutable
         #expect(fullRoutable == nil)
         #expect(self.hasSheetDisplayed())
     }
+}
+
+@MainActor
+@Test func testRepeatedSheetRouteHasDistinctEntries() async {
+    let router = MockSheetRouter()
+    let first = await router.show(.first)
+    let second = await router.show(.first)
+    #expect(first.route == second.route)
+    #expect(first.id != second.id)
+    #expect(!router.isDisplaying(first))
+    #expect(router.isDisplaying(second))
+    await router.hide()
+}
+
+@MainActor
+@Test func testDismissCallbackIsConsumedOnce() async {
+    let router = SheetRouter<TestRoute>()
+    var dismissCount = 0
+    await router.show(.first) { dismissCount += 1 }
+    router.partialRoutable = nil // SwiftUI clears the item binding on a swipe.
+    router.dismissFullScreen() // An unrelated callback must not clear the handler.
+    #expect(dismissCount == 0)
+    router.dismissPartialScreen()
+    router.dismissPartialScreen()
+    #expect(dismissCount == 1)
+}
+
+@MainActor
+@Test func testReplacementWaitsForInteractiveDismissal() async {
+    let router = SheetRouter<TestRoute>()
+    var dismissCount = 0
+    await router.show(.first) { dismissCount += 1 }
+    router.partialRoutable = nil
+    let replacement = Task { await router.show(.second, sheetType: .fullScreen) }
+    // Let the queued replacement reach the dismissal continuation.
+    for _ in 0..<10 { await Task.yield() }
+    #expect(router.fullRoutable == nil)
+    router.dismissPartialScreen()
+    let entry = await replacement.value
+    #expect(router.fullRoutable == entry)
+    #expect(dismissCount == 1)
 }

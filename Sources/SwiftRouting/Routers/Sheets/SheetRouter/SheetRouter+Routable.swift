@@ -7,14 +7,9 @@
 import SwiftUI
 
 
-// MARK: - SheetRouter - SheetViewFactory, Routable
-///SheetRouter is also Routable
-extension SheetRouter : Routable, HashableByType {
-    ///Create SheetRouteView
-    public func createView() -> SheetRouterView {
-        return SheetRouterView(router: self)
+// MARK: - SheetRouter - View factory
+extension SheetRouter {
+    public func createView<V: View>(@ViewBuilder makeView: @escaping @MainActor (T) -> V) -> SheetRouterView<T, V> {
+        SheetRouterView(router: self, makeView: makeView)
     }
 }
-
-
-

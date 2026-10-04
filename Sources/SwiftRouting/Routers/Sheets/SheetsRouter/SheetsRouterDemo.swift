@@ -8,53 +8,45 @@
 import SwiftUI
 
 
+enum StackedSheetRoute: Route {
+    case first, second, replacedSecond, third
+
+    @MainActor @ViewBuilder
+    func createView(coordinator: SheersCordinator) -> some View {
+        switch self {
+        case .first: TestView1(coordinator: coordinator)
+        case .second: TestView2(coordinator: coordinator)
+        case .replacedSecond: TestView2Replaced(coordinator: coordinator)
+        case .third: TestView3(coordinator: coordinator)
+        }
+    }
+}
+
 @MainActor
-class SheersCordinator: ObservableObject  {
-    let sheetsRouter = SheetsRouter()
-    weak var secondSheet: AnyRoutable?
-    
+class SheersCordinator: ObservableObject {
+    let sheetsRouter = SheetsRouter<StackedSheetRoute>()
+    var secondSheet: RouteEntry<StackedSheetRoute>?
+
     func showFirstSheet() {
-        let view = RoutableFactory { [unowned self] in
-            return TestView1(coordinator: self)
-        }
-        sheetsRouter.show(view, animated: false) {
-            print("dimiss First")
-        }
+        sheetsRouter.show(.first, animated: false) { print("dismiss First") }
     }
-    
+
     func showSecondSheet() {
-        let view = RoutableFactory { [unowned self] in
-            return TestView2(coordinator: self)
-        }
-        
         Task {
-            secondSheet = await sheetsRouter.show(view) {
-                print("dimiss Second")
-                
-            }
+            secondSheet = await sheetsRouter.show(.second) { print("dismiss Second") }
         }
     }
-    
+
     func replaceSecondSheet() {
-        let view = RoutableFactory { [unowned self] in
-            return TestView2Replaced(coordinator: self)
-        }
         Task {
-            secondSheet = await sheetsRouter.replace(view) {
-                print("dimiss second Replaced")
-            }
+            secondSheet = await sheetsRouter.replace(.replacedSecond) { print("dismiss second Replaced") }
         }
     }
-    
+
     func showThirdSheet() {
-        let view = RoutableFactory { [unowned self] in
-            return TestView3(coordinator: self)
-        }
-        sheetsRouter.show(view) {
-            print("dimiss Third")
-        }
+        sheetsRouter.show(.third) { print("dismiss Third") }
     }
-    
+
     func hideLast() {
         sheetsRouter.hide()
     }
@@ -77,7 +69,9 @@ struct SheetsDemoView: View {
         VStack {
             TestView(coordinator: appCordinator)
         }
-        .sheetsRouterView(appCordinator.sheetsRouter)
+        .sheetsRouterView(appCordinator.sheetsRouter) { route in
+            route.createView(coordinator: appCordinator)
+        }
     }
 }
 

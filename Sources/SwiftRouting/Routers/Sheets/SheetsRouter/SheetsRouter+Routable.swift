@@ -1,16 +1,7 @@
-//
-//  SheetsRouter+ViewFactory.swift
-//  SwiftRouting
-//
-//  Created by Elie Melki on 03/04/2025.
-//
+import SwiftUI
 
-
-// MARK: - SheetsRouter - Routable
-///SheetsRouter is also Routable
-extension SheetsRouter : Routable, HashableByType {
-    ///Create SheetsRouteView
-    public func createView() -> SheetsRouterView {
-        return SheetsRouterView(router: self)
+extension SheetsRouter {
+    public func createView<V: View>(@ViewBuilder makeView: @escaping @MainActor (T) -> V) -> SheetsRouterView<T, V> {
+        SheetsRouterView(router: self, makeView: makeView)
     }
 }

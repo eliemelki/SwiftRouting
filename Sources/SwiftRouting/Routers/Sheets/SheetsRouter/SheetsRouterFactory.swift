@@ -1,37 +1,13 @@
-//
-//  SheetsFactory.swift
-//  SwiftRouting
-//
-//  Created by Elie Melki on 24/03/2025.
-//
-
-import Combine
 import SwiftUI
 
-typealias Sheet = SheetActions & SheetDismissable & SheetViewFactory & AnyObject
-
-
 @MainActor
-protocol SheetsRouterFactory {
-    func instanceOfSheet() -> Sheet
+protocol SheetsRouterFactory<T> {
+    associatedtype T: Route
+    func instanceOfSheet() -> SheetRouter<T>
 }
 
-struct DefaultSheetsRouterFactory: SheetsRouterFactory {
-    func instanceOfSheet() -> Sheet {
-        return SheetRouter()
-    }
-}
-
-
-// MARK: - SheetViewFactory
-
-@MainActor
-protocol SheetViewFactory  {
-    func createView<T>(sheetContent: @escaping (AnyRoutable) -> T) -> NestedSheetRouterViewModifier<T>
-}
-
-extension SheetRouter : SheetViewFactory {
-    func createView<T>(sheetContent: @escaping (AnyRoutable) -> T) -> NestedSheetRouterViewModifier<T> {
-        NestedSheetRouterViewModifier(router: self,content: sheetContent)
+struct DefaultSheetsRouterFactory<T: Route>: SheetsRouterFactory {
+    func instanceOfSheet() -> SheetRouter<T> {
+        SheetRouter<T>()
     }
 }

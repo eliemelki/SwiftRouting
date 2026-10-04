@@ -18,10 +18,10 @@ protocol SheetDismissable {
 
 extension SheetRouter: SheetDismissable {
     func dismissFullScreen() {
-        dismiss(routable: self.fullRoutable, dismissHandler: self.fullDismissHandler)
+        dismiss(route: self.fullRoutable, sheetType: .fullScreen, dismissHandler: self.fullDismissHandler)
     }
     
     func dismissPartialScreen() {
-        dismiss(routable: self.partialRoutable, dismissHandler: self.partialDismissHandler)
+        dismiss(route: self.partialRoutable, sheetType: .partial, dismissHandler: self.partialDismissHandler)
     }
 }

@@ -11,25 +11,25 @@ import SwiftUI
 ///Basicall it internally has Multiple SheetRouter.
 
 @MainActor
-public class SheetsRouter: ObservableObject {
+public class SheetsRouter<T: Route>: ObservableObject {
     
-    @Published var sheets: [Sheet] = []
-    @Published var placeholderSheet: Sheet
+    @Published var sheets: [SheetRouter<T>] = []
+    @Published var placeholderSheet: SheetRouter<T>
     public private(set) var queue: SerialQueue = .init()
-    let factory: SheetsRouterFactory
+    let factory: any SheetsRouterFactory<T>
     
     public convenience init() {
-        self.init(factory: DefaultSheetsRouterFactory())
+        self.init(factory: DefaultSheetsRouterFactory<T>())
     }
     
-    init(factory: SheetsRouterFactory) {
+    init(factory: any SheetsRouterFactory<T>) {
         self.factory = factory
         self.placeholderSheet = factory.instanceOfSheet()
     }
 }
 
 extension SheetsRouter {
-    private func onSheetDismiss(_ router: Sheet, onDismiss: SheetDismissHandler?) {
+    private func onSheetDismiss(_ router: SheetRouter<T>, onDismiss: SheetDismissHandler?) {
         defer {
             onDismiss?()
         }
@@ -39,7 +39,7 @@ extension SheetsRouter {
         self.placeholderSheet = factory.instanceOfSheet()
     }
     
-    func _hide(_ sheet: Sheet, animated: Bool) async {
+    func _hide(_ sheet: SheetRouter<T>, animated: Bool) async {
        await sheet.hide(animated: animated)
     }
     
@@ -50,40 +50,24 @@ extension SheetsRouter {
     func _hide(index: Int, animated: Bool = true) async {
         guard sheets.indices.contains(index) else { return }
         
-        if Test.isRunningTests() {
-            //Do We want to hide them one by one?! Thats why for now only run for unit test.
-            guard index >= 0 else { return }
-            
-            await withTaskGroup(of: Void.self) {  group in
-                
-                for i in (index..<sheets.count).reversed() {
-                    let clousure: @MainActor () async -> Void = {
-                        await self._hide(self.sheets[i], animated: animated)
-                    }
-                    group.addTask {
-                        await clousure()
-                    }
-                }
-                
-                for await _ in group {}
-            }
-        }else {
-            let sheets = sheets
-            await self._hide(sheets[index], animated: animated)
+        // Snapshot before awaiting: dismissal callbacks mutate the live array.
+        let sheets = Array(self.sheets[index...])
+        for sheet in sheets.reversed() {
+            await self._hide(sheet, animated: animated)
         }
     }
     
     @discardableResult
     
-    func _show<T: Routable>(_ item: T, sheetType: SheetType = .partial, animated: Bool, onDismiss: SheetDismissHandler? = nil) async -> AnyRoutable {
+    func _show(_ item: T, sheetType: SheetType = .partial, animated: Bool, onDismiss: SheetDismissHandler? = nil) async -> RouteEntry<T> {
         let currentSheet = self.placeholderSheet
         
-        let placeHolderSheet: Sheet = self.factory.instanceOfSheet()
+        let placeHolderSheet: SheetRouter<T> = self.factory.instanceOfSheet()
         self.placeholderSheet = placeHolderSheet
         
         
-        let dismissHandler = { [weak self] in
-            guard let self else { return }
+        let dismissHandler = { [weak self, weak currentSheet] in
+            guard let self, let currentSheet else { return }
             onSheetDismiss(currentSheet, onDismiss: onDismiss)
         }
         

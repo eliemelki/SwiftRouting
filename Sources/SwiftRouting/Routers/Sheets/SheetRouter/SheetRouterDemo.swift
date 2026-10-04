@@ -7,40 +7,51 @@
 
 import SwiftUI
 
+
+enum SheetRoutable: String, Route {
+
+    case sheet1, sheet2
+
+    @ViewBuilder
+    func createView(coordinator: SheetCoordinator) -> some View {
+        switch self {
+        case .sheet1:
+            SheetView1(coordinator: coordinator)
+        case .sheet2:
+            SheetView2(coordinator: coordinator)
+        }
+    }
+}
+
 @MainActor
 class SheetCoordinator : ObservableObject {
-    let sheetRouter = SheetRouter()
-    
+    let sheetRouter = SheetRouter<SheetRoutable>()
+
     var value = 0
-    
+
     func showSheet1() {
-        let routable = RoutableFactory { [unowned self] in
-            return SheetView1(coordinator: self)
-        }
-        sheetRouter.show(routable, sheetType: .partial, animated: false) {
+        sheetRouter.show(SheetRoutable.sheet1, sheetType: .partial, animated: false) {
             print("dismissed SheetView1")
         }
     }
-    
+
     func hideSheet1() {
         value += 1
         //sheetRouter.hide(animated: value % 2 == 0)
         sheetRouter.hide()
     }
-    
+
     func replaceSheet1BySheet2() {
-        let routable = RoutableFactory { [unowned self] in
-            return SheetView2(coordinator: self)
-        }
+
         value += 1
 //        sheetRouter.show(routable, sheetType: .fullScreen,animated: value % 2 == 0) {
 //            print("dismiss SheetView2")
 //        }
-        sheetRouter.show(routable, sheetType: .fullScreen, animated: true) {
+        sheetRouter.show(SheetRoutable.sheet2, sheetType: .fullScreen, animated: true) {
             print("dismiss SheetView2")
         }
     }
-    
+
     func hideSheet2() {
         value += 1
         //sheetRouter.hide(animated: value % 2 == 0)
@@ -49,12 +60,14 @@ class SheetCoordinator : ObservableObject {
 }
 
 struct SheetDemoView : View {
-    @ObservedObject var coordinator: SheetCoordinator = .init()
-    
+    @StateObject var coordinator: SheetCoordinator = .init()
+
     var body: some View {
         VStack {
             SheetBase(coordinator: coordinator)
-        }.sheetRouterView(coordinator.sheetRouter)
+        }.sheetRouterView(coordinator.sheetRouter) { route in
+            route.createView(coordinator: coordinator)
+        }
     }
 }
 
@@ -78,12 +91,12 @@ fileprivate struct SheetView1 : View {
             Button("Replace SheetView1 by SheetView2 Full") {
                 coordinator.replaceSheet1BySheet2()
             }
-            
+
             Button("hide SheetView1") {
                 coordinator.hideSheet1()
             }
         }
-        
+
     }
 }
 
@@ -96,7 +109,7 @@ fileprivate struct SheetView2 : View {
                 coordinator.hideSheet2()
             }
         }
-        
+
     }
 }
 

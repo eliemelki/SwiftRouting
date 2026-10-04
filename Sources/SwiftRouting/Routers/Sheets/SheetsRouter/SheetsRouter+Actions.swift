@@ -9,19 +9,20 @@
 
 @MainActor
 public protocol SheetsActions {
+    associatedtype T: Route
     
     @discardableResult
-    func show<T: Routable>(_ routable: T, sheetType: SheetType, animated: Bool, onDismiss: SheetDismissHandler?) async -> AnyRoutable?
+    func show(_ routable: T, sheetType: SheetType, animated: Bool, onDismiss: SheetDismissHandler?) async -> RouteEntry<T>?
     
     @discardableResult
-    func replace<T: Routable>(_ routable: T, sheetType: SheetType, animated: Bool,onDismiss: SheetDismissHandler?) async -> AnyRoutable?
+    func replace(_ routable: T, sheetType: SheetType, animated: Bool,onDismiss: SheetDismissHandler?) async -> RouteEntry<T>?
     
     func hide(animated: Bool) async
     
  
     func hide(index: Int, animated: Bool) async
     
-    func hide(routable: AnyRoutable, animated: Bool) async
+    func hide(routable: RouteEntry<T>, animated: Bool) async
     
     func hideAll(animated: Bool) async
 }
@@ -32,14 +33,14 @@ extension SheetsRouter: SheetsActions {
     
     /// Show a sheet using async
     /// - Parameters:
-    ///   - routable: Represent Routable object or any view that needs to be displayed. check `Routable` for more info.
+    ///   - routable: The route to display.
     ///   - sheetType: how to show sheet wether full or partial.
     ///   - animated: animate sheet showing
     ///   - dismissHandler: callback when sheet is dismissed. This get called when automatically or manually hiding the sheet. Manually as per calling hide explicitly.
-    /// - Returns: An  `AnyRoutable` the internal earse typed object of routable created internally.
+    /// - Returns: The unique entry for this presentation.
     ///
     @discardableResult
-    public func show<T: Routable>(_ item: T,  sheetType: SheetType = .partial, animated: Bool = true, onDismiss: SheetDismissHandler? = nil) async -> AnyRoutable? {
+    public func show(_ item: T,  sheetType: SheetType = .partial, animated: Bool = true, onDismiss: SheetDismissHandler? = nil) async -> RouteEntry<T>? {
         return await queue.execute { @MainActor [weak self] in
             return await self?._show(item, sheetType:sheetType, animated: animated, onDismiss: onDismiss)
         }
@@ -47,14 +48,14 @@ extension SheetsRouter: SheetsActions {
     
     /// Replace an sheet using async
     /// - Parameters:
-    ///   - routable: Represent Routable object or any view that needs to be displayed. check `Routable` for more info.
+    ///   - routable: The route to display.
     ///   - sheetType: how to show sheet wether full or partial.
     ///   - animated: animate sheet showing
     ///   - dismissHandler: callback when sheet is dismissed. This get called when automatically or manually hiding the sheet. Manually as per calling hide explicitly.
-    /// - Returns: An  `AnyRoutable` the internal earse typed object of routable created internally.
+    /// - Returns: The unique entry for this presentation.
     ///
     @discardableResult
-    public func replace<T: Routable>(_ item: T, sheetType: SheetType = .partial, animated: Bool = true, onDismiss: SheetDismissHandler?) async -> AnyRoutable? {
+    public func replace(_ item: T, sheetType: SheetType = .partial, animated: Bool = true, onDismiss: SheetDismissHandler? = nil) async -> RouteEntry<T>? {
         return await queue.execute { [weak self] in
             await self?._hide(animated: animated)
             return await self?._show(item, sheetType:sheetType, animated: animated, onDismiss: onDismiss)
@@ -85,7 +86,7 @@ extension SheetsRouter: SheetsActions {
     
     /// Hide a specific routable asycnhronusly.
     /// - Parameters:
-    ///   - routable: Represent Routable object or any view that needs to be dismissed. check `Routable` for more info.
+    ///   - routable: The entry identifying the presentation to dismiss.
     ///   - animated: animate sheet hiding
     ///
     ///
@@ -100,7 +101,7 @@ extension SheetsRouter: SheetsActions {
     ///   - animated: animate sheet hiding
     ///
     ///
-    public func hide(routable: AnyRoutable,animated: Bool = true) async {
+    public func hide(routable: RouteEntry<T>,animated: Bool = true) async {
         await queue.execute { [weak self] in
             let index = self?.sheets.firstIndex { $0.isDisplaying(routable) }
             guard let index else {
@@ -115,14 +116,14 @@ extension SheetsRouter: SheetsActions {
 public extension SheetsRouter {
     
     ///Same as show(...) async yet it doesnt needs an await
-    func show<T: Routable>(_ routable: T, sheetType: SheetType = .partial, animated: Bool = true, onDismiss: SheetDismissHandler? = nil) {
+    func show(_ routable: T, sheetType: SheetType = .partial, animated: Bool = true, onDismiss: SheetDismissHandler? = nil) {
         Task {
             await self.show(routable, sheetType: sheetType, animated: animated, onDismiss: onDismiss)
         }
     }
     
     ///Same as replace(...) async yet it doesnt needs an await
-    func replace<T: Routable>(_ routable: T, sheetType: SheetType = .partial, animated: Bool = true, onDismiss: SheetDismissHandler? = nil) {
+    func replace(_ routable: T, sheetType: SheetType = .partial, animated: Bool = true, onDismiss: SheetDismissHandler? = nil) {
         Task {
             await self.replace(routable, sheetType: sheetType, animated: animated, onDismiss: onDismiss)
         }
@@ -143,7 +144,7 @@ public extension SheetsRouter {
     }
     
     ///Same as hide(...) async yet it doesnt needs an await
-    func hide(routable: AnyRoutable, animated: Bool = true)  {
+    func hide(routable: RouteEntry<T>, animated: Bool = true)  {
         Task {
             await self.hide(routable: routable, animated: animated)
         }

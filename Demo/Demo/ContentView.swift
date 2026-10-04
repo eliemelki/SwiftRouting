@@ -11,7 +11,6 @@ import SwiftUI
 
  struct ContentView: View {
     
-    let sheetsRouter = SheetsRouter()
     @State var showSheet = false
     var body: some View {
         VStack {
