@@ -182,3 +182,57 @@ import SwiftUI
     router = nil
     #expect(sheet == nil)
 }
+
+@MainActor
+@Test func testHideAllDismissesParentOnceAndOrdersCallbacks() async {
+    let router = SheetsRouter<TestRoute>()
+    var callbacks: [Int] = []
+    await router.show(.first) { callbacks.append(1) }
+    await router.show(.second, sheetType: .fullScreen) { callbacks.append(2) }
+    await router.show(.first) { callbacks.append(3) }
+    let presenters = router.sheets
+
+    let hide = Task { await router.hideAll() }
+    while presenters[0].partialEntry != nil { await Task.yield() }
+    #expect(presenters[1].fullScreenEntry != nil)
+    #expect(presenters[2].partialEntry != nil)
+    #expect(callbacks.isEmpty)
+
+    // Descendant callbacks may arrive before the parent's callback.
+    presenters[2].partialEntry = nil
+    presenters[2].didDismissPartialSheet()
+    #expect(callbacks.isEmpty)
+    presenters[0].didDismissPartialSheet()
+    await hide.value
+
+    #expect(callbacks == [3, 2, 1])
+    #expect(router.sheets.isEmpty)
+    #expect(presenters.allSatisfy { !$0.isPresentingSheet })
+    // Delayed SwiftUI callbacks must not repeat delivery.
+    presenters[1].didDismissFullScreen()
+    presenters[2].didDismissPartialSheet()
+    presenters[0].didDismissPartialSheet()
+    #expect(callbacks == [3, 2, 1])
+}
+
+@MainActor
+@Test func testHideAtIndexDismissesOnlyTargetSubtree() async {
+    let router = SheetsRouter<TestRoute>()
+    var callbacks: [Int] = []
+    await router.show(.first) { callbacks.append(1) }
+    await router.show(.second, sheetType: .fullScreen) { callbacks.append(2) }
+    await router.show(.first) { callbacks.append(3) }
+    let presenters = router.sheets
+
+    let hide = Task { await router.hide(index: 1) }
+    while presenters[1].fullScreenEntry != nil { await Task.yield() }
+    #expect(presenters[0].partialEntry != nil)
+    #expect(presenters[2].partialEntry != nil)
+    presenters[1].didDismissFullScreen()
+    await hide.value
+
+    #expect(callbacks == [3, 2])
+    #expect(router.sheets.count == 1)
+    #expect(router.sheets.first === presenters[0])
+    #expect(presenters[0].isPresentingSheet)
+}

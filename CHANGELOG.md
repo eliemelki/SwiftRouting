@@ -7,6 +7,8 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Changed
 
+- Dismiss a sheet subtree in one transition, then deliver callbacks once from top to bottom.
+
 - Serialize stacked sheet actions once, using the stack queue and direct child presentation methods.
 
 - Document typed routes, occurrence identity, and all five routers.

@@ -49,14 +49,19 @@ extension SheetsRouter {
         await self.hidePresentations(index: self.sheets.count - 1, animated: animated)
     }
 
-    /// Dismisses a snapshot of presenters at and above an index.
+    /// Dismisses the target presenter once, then completes callbacks from top to bottom.
     func hidePresentations(index: Int, animated: Bool = true) async {
         guard sheets.indices.contains(index) else { return }
 
-        // Snapshot before awaiting: dismissal callbacks mutate the live array.
-        let sheets = Array(self.sheets[index...])
-        for sheet in sheets.reversed() {
-            await sheet.hidePresentation(animated: animated)
+        let dismissedSheets = Array(sheets[index...])
+        // SwiftUI can deliver descendant onDismiss callbacks in any order.
+        // Detach them first so the stack owns their order and delivers each once.
+        let handlers = dismissedSheets.map { $0.takeDismissHandler() }
+        await dismissedSheets[0].hidePresentation(animated: animated)
+
+        for (sheet, handler) in zip(dismissedSheets, handlers).reversed() {
+            sheet.finishDismissalAfterParent()
+            handler?()
         }
     }
 

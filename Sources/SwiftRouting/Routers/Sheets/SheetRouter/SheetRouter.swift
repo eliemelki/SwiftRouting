@@ -77,6 +77,25 @@ extension SheetRouter {
         }
     }
 
+    /// Transfers callback delivery to the stack owner before a parent dismissal.
+    func takeDismissHandler() -> SheetDismissHandler? {
+        let handler = onFullScreenDismiss ?? onPartialDismiss
+        onFullScreenDismiss = nil
+        onPartialDismiss = nil
+        return handler
+    }
+
+    /// Clears a child presenter after its parent has finished dismissing the subtree.
+    /// SwiftUI may already have delivered this child's callback; completion is idempotent.
+    func finishDismissalAfterParent() {
+        guard let sheetType = activeSheetType else { return }
+        runWithAnimation(animated: false) {
+            fullScreenEntry = nil
+            partialEntry = nil
+        }
+        finishDismissal(entry: nil, sheetType: sheetType, onDismiss: nil)
+    }
+
     /// Replaces the presentation without entering a queue.
     /// The caller must serialize this operation with any other presentation changes.
     @discardableResult

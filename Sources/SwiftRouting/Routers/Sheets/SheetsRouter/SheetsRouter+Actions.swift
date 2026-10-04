@@ -78,7 +78,8 @@ extension SheetsRouter: SheetsActions {
         }
     }
 
-    /// Dismisses every sheet from top to bottom, waiting for each dismissal callback.
+    /// Dismisses the bottom sheet and its subtree in one transition.
+    /// After it completes, delivers dismissal handlers from top to bottom.
     /// - Parameter animated: Whether to allow the dismissal transitions to animate.
     public func hideAll(animated: Bool = true) async {
         await queue.execute { [weak self] in
@@ -86,7 +87,8 @@ extension SheetsRouter: SheetsActions {
         }
     }
 
-    /// Dismisses the sheet at an index and every sheet above it, from top to bottom.
+    /// Dismisses the sheet at an index and its subtree in one transition.
+    /// After it completes, delivers dismissal handlers from top to bottom.
     /// - Parameters:
     ///   - index: A zero-based position from the bottom of the stack. Invalid indices do nothing.
     ///   - animated: Whether to allow the dismissal transitions to animate.
@@ -96,7 +98,8 @@ extension SheetsRouter: SheetsActions {
         }
     }
 
-    /// Dismisses an exact occurrence and every sheet above it, from top to bottom.
+    /// Dismisses an exact occurrence and its subtree in one transition.
+    /// After it completes, delivers dismissal handlers from top to bottom.
     /// - Parameters:
     ///   - entry: The occurrence returned by `show` or `replace`. Unknown entries do nothing.
     ///   - animated: Whether to allow the dismissal transitions to animate.

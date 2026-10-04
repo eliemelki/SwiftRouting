@@ -152,7 +152,9 @@ struct StackedSheetsExample: View {
 
 Stack actions enter only the `SheetsRouter` queue. Its child presenters run their
 internal presentation methods directly; standalone `SheetRouter` actions use their
-own queue. Dismissal runs from top to bottom and waits for each callback. Presentation actions
+own queue. Hiding multiple sheets dismisses the lowest targeted presenter and
+its subtree in one transition. After that presenter completes dismissal, the
+router delivers each dismissal handler once, sequentially from top to bottom. Presentation actions
 return after assigning their entries, before their presentation animations finish.
 The async `show` and `replace` overloads return an optional entry; nil means the
 router was unavailable when its queued action ran. Synchronous overloads schedule
