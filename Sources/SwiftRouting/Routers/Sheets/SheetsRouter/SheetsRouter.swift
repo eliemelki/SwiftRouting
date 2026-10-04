@@ -44,11 +44,6 @@ extension SheetsRouter {
         self.placeholderSheet = factory.makeSheetRouter()
     }
 
-    /// Waits for one presenter to complete its dismissal.
-    func hidePresentations(_ sheet: SheetRouter<T>, animated: Bool) async {
-       await sheet.hide(animated: animated)
-    }
-
     /// Dismisses the top presenter if the stack is nonempty.
     func hidePresentations(animated: Bool = true) async {
         await self.hidePresentations(index: self.sheets.count - 1, animated: animated)
@@ -61,11 +56,12 @@ extension SheetsRouter {
         // Snapshot before awaiting: dismissal callbacks mutate the live array.
         let sheets = Array(self.sheets[index...])
         for sheet in sheets.reversed() {
-            await self.hidePresentations(sheet, animated: animated)
+            await sheet.hidePresentation(animated: animated)
         }
     }
 
-    /// Promotes the placeholder to a presenter and prepares the next placeholder.
+    /// Promotes the placeholder and presents directly under the stack's queue.
+    /// Call only from a serialized stack action.
     @discardableResult
     func showPresentation(_ route: T, sheetType: SheetType = .partial, animated: Bool, onDismiss: SheetDismissHandler? = nil) async -> RouteEntry<T> {
         let currentSheet = self.placeholderSheet
@@ -80,7 +76,7 @@ extension SheetsRouter {
 
         self.sheets.append(currentSheet)
 
-        return await currentSheet.show(route, sheetType: sheetType, animated: animated, onDismiss: handleDismissal)
+        return await currentSheet.showPresentation(route, sheetType: sheetType, animated: animated, onDismiss: handleDismissal)
     }
 }
 

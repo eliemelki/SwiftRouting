@@ -32,7 +32,8 @@ public class SheetRouter<T: Route>: ObservableObject {
     /// Remains set while a cleared presentation binding is still dismissing.
     private var activeSheetType: SheetType?
 
-    var queue: SerialQueue = .init()
+    // Stacked presenters use their owner's queue and never need this one.
+    lazy var queue: SerialQueue = .init()
 
     /// Creates a router with no active presentation.
     public init() {}
@@ -52,7 +53,7 @@ extension SheetRouter {
         completion?()
     }
 
-    /// Bridges SwiftUI dismissal completion into the queued async action.
+    /// Waits for dismissal without entering a queue; the caller must serialize changes.
     func hidePresentation(animated: Bool) async {
         await withCheckedContinuation { @MainActor continuation in
             self.hidePresentation(animated: animated) {
@@ -76,35 +77,24 @@ extension SheetRouter {
         }
     }
 
-    /// Queues replacement with a partial-sheet entry.
+    /// Replaces the presentation without entering a queue.
+    /// The caller must serialize this operation with any other presentation changes.
     @discardableResult
-    func showPartial(_ route: T, animated: Bool, onDismiss: SheetDismissHandler? = nil) async -> RouteEntry<T> {
+    func showPresentation(_ route: T, sheetType: SheetType, animated: Bool,
+                          onDismiss: SheetDismissHandler?) async -> RouteEntry<T> {
         let entry = RouteEntry(route)
-        await queue.execute {
-            await self.hidePresentation(animated: animated)
-            self.runWithAnimation(animated: animated) {
-                self.activeSheetType = .partial
-                self.partialEntry = entry
-                self.onPartialDismiss = onDismiss
+        await hidePresentation(animated: animated)
+        runWithAnimation(animated: animated) {
+            activeSheetType = sheetType
+            switch sheetType {
+            case .partial:
+                onPartialDismiss = onDismiss
+                partialEntry = entry
+            case .fullScreen:
+                onFullScreenDismiss = onDismiss
+                fullScreenEntry = entry
             }
         }
         return entry
     }
-
-    /// Queues replacement with a full-screen entry.
-    @discardableResult
-    func showFullScreen(_ route: T, animated: Bool, onDismiss: SheetDismissHandler? = nil) async -> RouteEntry<T> {
-        let entry = RouteEntry(route)
-        await queue.execute {
-            await self.hidePresentation(animated: animated)
-            self.runWithAnimation(animated: animated) {
-                self.activeSheetType = .fullScreen
-                self.fullScreenEntry = entry
-                self.onFullScreenDismiss = onDismiss
-            }
-        }
-        return entry
-    }
-
 }
-

@@ -7,6 +7,8 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Changed
 
+- Serialize stacked sheet actions once, using the stack queue and direct child presentation methods.
+
 - Document typed routes, occurrence identity, and all five routers.
 - Standardize router view factories as `view(...)` and dismissal callbacks as `onDismiss`.
 - Rename navigation state to `root` and `path`, with `setRoot(_:)` for root updates.

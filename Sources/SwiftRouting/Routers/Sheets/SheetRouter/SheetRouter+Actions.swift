@@ -29,11 +29,8 @@ extension SheetRouter {
     @discardableResult
     public func show(_ route: T, sheetType: SheetType = .partial, animated: Bool = true,
                      onDismiss: SheetDismissHandler? = nil) async -> RouteEntry<T> {
-        switch sheetType {
-        case .fullScreen:
-            await showFullScreen(route, animated: animated, onDismiss: onDismiss)
-        case .partial:
-            await showPartial(route, animated: animated, onDismiss: onDismiss)
+        await queue.execute {
+            await self.showPresentation(route, sheetType: sheetType, animated: animated, onDismiss: onDismiss)
         }
     }
 
