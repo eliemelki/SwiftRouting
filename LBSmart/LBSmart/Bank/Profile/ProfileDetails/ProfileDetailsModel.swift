@@ -8,12 +8,12 @@
 import SwiftUI
 
 @MainActor
-final class ProfileViewModel: ObservableObject {
+final class ProfileDetailsViewModel: ObservableObject {
     let displayName = "Alex Morgan"
     let infoLinks = ProfileInfoRoute.allCases
-    private let coordinator: any ProfileViewCoordinator
+    private let coordinator: ProfileDetailsCoordinator
 
-    init(coordinator: any ProfileViewCoordinator) {
+    init(coordinator: ProfileDetailsCoordinator) {
         self.coordinator = coordinator
     }
 

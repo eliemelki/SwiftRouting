@@ -32,7 +32,7 @@ enum ProfileInfoRoute: String, Route, CaseIterable {
 }
 
 @MainActor
-final class ProfileCoordinator: ProfileViewCoordinator, InfoSheetCoordinator, PersonalDetailsCoordinator {
+final class ProfileCoordinator: ProfileDetailsCoordinator, InfoSheetCoordinator, PersonalDetailsCoordinator {
     let navigationRouter = NavigationRouter<ProfileRoute>(root: .profile)
     let sheetRouter = SheetRouter<ProfileInfoRoute>()
     private weak var sessionCoordinator: BankTabsCoordinator?
@@ -65,7 +65,7 @@ final class ProfileCoordinator: ProfileViewCoordinator, InfoSheetCoordinator, Pe
     func makeView(for route: ProfileRoute) -> some View {
         switch route {
         case .profile:
-            ProfileView(viewModel: ProfileViewModel(coordinator: self))
+            ProfileDetailsView(viewModel: ProfileDetailsViewModel(coordinator: self))
         case .personalDetails:
             PersonalDetailsView(viewModel: PersonalDetailsViewModel(coordinator: self))
         }

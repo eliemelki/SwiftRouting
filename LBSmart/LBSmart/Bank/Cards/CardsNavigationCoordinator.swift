@@ -14,9 +14,9 @@ enum CardsRoute: Route {
 }
 
 @MainActor
-final class CardsNavigationCoordinator: CardCoordinator, AccountDetailCoordinator {
+final class CardsNavigationCoordinator: AccountDetailCoordinator {
     let navigationRouter = NavigationRouter<CardsRoute>(root: .cards)
-    private(set) lazy var pagingCoordinator = CardsViewCoordinator(navigationCoordinator: self)
+    private(set) lazy var pagingCoordinator = CardsCoordinator(navigationCoordinator: self)
 
     @discardableResult
     func showLinkedAccount(for card: BankCard) -> RouteEntry<CardsRoute> {

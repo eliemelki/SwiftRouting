@@ -9,7 +9,7 @@ import Foundation
 
 /// The coordinator capabilities required by this screen.
 @MainActor
-protocol ProfileViewCoordinator: AnyObject {
+protocol ProfileDetailsCoordinator: AnyObject {
     func showPersonalDetails()
     func showInfo(_ info: ProfileInfoRoute)
     func signOut()

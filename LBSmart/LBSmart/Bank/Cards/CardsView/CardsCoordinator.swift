@@ -11,19 +11,22 @@ import SwiftUI
 
 /// Owns card paging and builds each card's content.
 @MainActor
-final class CardsViewCoordinator {
+final class CardsCoordinator: CardCoordinator {
     let pageRouter = PageRouter<BankCard>(pages: BankCard.samples)
-    private weak var navigationCoordinator: CardsNavigationCoordinator?
-
+    private weak var parentCoordinator: CardsNavigationCoordinator?
+    
     init(navigationCoordinator: CardsNavigationCoordinator) {
-        self.navigationCoordinator = navigationCoordinator
+        self.parentCoordinator = navigationCoordinator
     }
-
+    
+    func showLinkedAccount(for card: BankCard) {
+        if let parentCoordinator {
+            parentCoordinator.showLinkedAccount(for: card)
+        }
+    }
     /// Creates a card whose actions open details in the Cards navigation stack.
     @ViewBuilder
     func makeCardView(for card: BankCard) -> some View {
-        if let navigationCoordinator {
-            CardView(viewModel: CardViewModel(card: card, coordinator: navigationCoordinator))
-        }
+        CardView(viewModel: CardViewModel(card: card, coordinator: self))
     }
 }

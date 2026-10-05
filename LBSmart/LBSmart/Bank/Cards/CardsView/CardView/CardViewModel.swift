@@ -10,9 +10,9 @@ import SwiftUI
 @MainActor
 final class CardViewModel: ObservableObject {
     let card: BankCard
-    private let coordinator: any CardCoordinator
+    private let coordinator: CardCoordinator
 
-    init(card: BankCard, coordinator: any CardCoordinator) {
+    init(card: BankCard, coordinator: CardCoordinator) {
         self.card = card
         self.coordinator = coordinator
     }

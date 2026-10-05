@@ -10,6 +10,5 @@ import SwiftRouting
 /// The coordinator capabilities required by this screen.
 @MainActor
 protocol CardCoordinator: AnyObject {
-    @discardableResult
-    func showLinkedAccount(for card: BankCard) -> RouteEntry<CardsRoute>
+    func showLinkedAccount(for card: BankCard)
 }
