@@ -1,5 +1,5 @@
 //
-//  BankRootView.swift
+//  BankAppView.swift
 //  LBSmart
 //
 //  Created by Elie Melki on 05/10/2026.
@@ -7,10 +7,10 @@
 
 import SwiftUI
 
-struct BankRootView: View {
-    @StateObject private var viewModel: BankRootViewModel
+struct BankAppView: View {
+    @StateObject private var viewModel: BankAppViewModel
 
-    init(viewModel: BankRootViewModel) {
+    init(viewModel: BankAppViewModel) {
         _viewModel = StateObject(wrappedValue: viewModel)
     }
 

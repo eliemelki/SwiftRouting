@@ -8,10 +8,10 @@
 import SwiftUI
 import SwiftRouting
 
-struct AccountsNavigationView: View {
-    @StateObject private var viewModel: AccountsNavigationViewModel
+struct AccountsNavigationView<C: AccountsNavigationCoordinator>: View {
+    @StateObject private var viewModel: AccountsNavigationViewModel<C>
 
-    init(viewModel: AccountsNavigationViewModel) {
+    init(viewModel: AccountsNavigationViewModel<C>) {
         _viewModel = StateObject(wrappedValue: viewModel)
     }
 

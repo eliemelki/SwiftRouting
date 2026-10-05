@@ -11,7 +11,7 @@ import SwiftUI
 struct LBSmartApp: App {
     var body: some Scene {
         WindowGroup {
-            BankRootView(viewModel: BankRootViewModel())
+            BankAppView(viewModel: BankAppViewModel(coordinator: BankAppCoordinator()))
         }
     }
 }

@@ -10,10 +10,10 @@ import SwiftUI
 @MainActor
 final class AccountsViewModel: ObservableObject {
     let accounts = BankAccount.samples
-    private let coordinator: AccountsCoordinator
+    private let coordinator: any AccountsViewCoordinator
     var totalBalance: Double { accounts.reduce(0) { $0 + $1.balance } }
 
-    init(coordinator: AccountsCoordinator) {
+    init(coordinator: any AccountsViewCoordinator) {
         self.coordinator = coordinator
     }
 

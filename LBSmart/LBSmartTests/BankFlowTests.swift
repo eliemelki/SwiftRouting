@@ -11,19 +11,19 @@ import Testing
 @MainActor
 @Test func testBankLoginAndFreshSessionAfterLogout() throws {
     let app = BankAppCoordinator()
-    let rootModel = BankRootViewModel(coordinator: app)
+    let rootModel = BankAppViewModel(coordinator: app)
     #expect(rootModel.route == .login)
-    #expect(app.session == nil)
+    #expect(app.tabCoordinator == nil)
     LoginViewModel(coordinator: app).signIn()
-    let session = try #require(app.session)
+    let session = try #require(app.tabCoordinator)
     #expect(rootModel.route == .signedIn)
     session.cardsCoordinator.showLinkedAccount(for: BankCard.samples[0])
     session.tabRouter.select(.profile)
     ProfileViewModel(coordinator: session.profileCoordinator).signOut()
     #expect(rootModel.route == .login)
-    #expect(app.session == nil)
+    #expect(app.tabCoordinator == nil)
     app.signIn()
-    let fresh = try #require(app.session)
+    let fresh = try #require(app.tabCoordinator)
     #expect(fresh !== session)
     #expect(fresh.tabRouter.selection?.route == .accounts)
     #expect(fresh.cardsCoordinator.navigationRouter.path.isEmpty)
@@ -33,7 +33,7 @@ import Testing
 @Test func testCardsPushLinkedAccountWithoutChangingAccountsStack() throws {
     let app = BankAppCoordinator()
     app.signIn()
-    let session = try #require(app.session)
+    let session = try #require(app.tabCoordinator)
     let card = BankCard.samples[1]
     CardViewModel(card: card, coordinator: session.cardsCoordinator).showLinkedAccount()
     #expect(session.cardsCoordinator.navigationRouter.path.last?.route == .accountDetail(card.account))
@@ -51,7 +51,7 @@ import Testing
 @Test func testAccountsAndProfileNavigateThroughViewModels() throws {
     let app = BankAppCoordinator()
     app.signIn()
-    let session = try #require(app.session)
+    let session = try #require(app.tabCoordinator)
     let account = BankAccount.samples[0]
     AccountsViewModel(coordinator: session.accountsCoordinator).showAccount(account)
     #expect(session.accountsCoordinator.navigationRouter.path.last?.route == .detail(account))
@@ -67,8 +67,8 @@ import Testing
 @Test func testSessionIsReleasedOnLogout() throws {
     let app = BankAppCoordinator()
     app.signIn()
-    weak var session = app.session
-    weak var profile = app.session?.profileCoordinator
+    weak var session = app.tabCoordinator
+    weak var profile = app.tabCoordinator?.profileCoordinator
     app.signOut()
     #expect(session == nil)
     #expect(profile == nil)
@@ -78,7 +78,7 @@ import Testing
 @Test func testProfileInfoUsesSheetRouter() async throws {
     let app = BankAppCoordinator()
     app.signIn()
-    let profile = try #require(app.session?.profileCoordinator)
+    let profile = try #require(app.tabCoordinator?.profileCoordinator)
     let model = ProfileViewModel(coordinator: profile)
     model.showInfo(.security)
     // Drain the fire-and-forget action before inspecting its presentation entry.

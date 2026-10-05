@@ -24,12 +24,12 @@ enum ProfileInfoRoute: String, Route, CaseIterable {
 }
 
 @MainActor
-final class ProfileCoordinator: ObservableObject {
+final class ProfileCoordinator: ObservableObject, ProfileViewCoordinator, InfoSheetCoordinator, PersonalDetailsCoordinator {
     let navigationRouter = NavigationRouter<ProfileRoute>(root: .profile)
     let sheetRouter = SheetRouter<ProfileInfoRoute>()
-    private weak var sessionCoordinator: BankSessionCoordinator?
+    private weak var sessionCoordinator: BankTabsCoordinator?
 
-    init(sessionCoordinator: BankSessionCoordinator) {
+    init(sessionCoordinator: BankTabsCoordinator) {
         self.sessionCoordinator = sessionCoordinator
     }
 

@@ -10,7 +10,7 @@ import SwiftUI
 @MainActor
 final class InfoSheetViewModel: ObservableObject {
     @Published private(set) var isExpanded = false
-    let info: ProfileInfo
+    let info: ProfileInfoRoute
 
     var usesDynamicHeight: Bool { info != .support }
     var additionalInformation: String {
@@ -20,9 +20,9 @@ final class InfoSheetViewModel: ObservableObject {
         case .support: return "Contact your bank directly for help with a real account."
         }
     }
-    private let coordinator: ProfileCoordinator
+    private let coordinator: any InfoSheetCoordinator
 
-    init(info: ProfileInfo, coordinator: ProfileCoordinator) {
+    init(info: ProfileInfoRoute, coordinator: any InfoSheetCoordinator) {
         self.info = info
         self.coordinator = coordinator
     }

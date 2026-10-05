@@ -7,10 +7,10 @@
 
 import SwiftUI
 
-struct CardsView: View {
-    @StateObject private var viewModel: CardsViewModel
+struct CardsView<C: CardsPagingCoordinator>: View {
+    @StateObject private var viewModel: CardsViewModel<C>
 
-    init(viewModel: CardsViewModel) {
+    init(viewModel: CardsViewModel<C>) {
         _viewModel = StateObject(wrappedValue: viewModel)
     }
 

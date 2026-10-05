@@ -10,14 +10,8 @@ import SwiftRouting
 
 enum AccountsRoute: Route { case accounts, detail(BankAccount) }
 
-/// Allows the same account detail screen to be pushed from either tab.
 @MainActor
-protocol AccountDetailCoordinating: AnyObject {
-    func closeAccountDetail()
-}
-
-@MainActor
-final class AccountsCoordinator: ObservableObject, AccountDetailCoordinating {
+final class AccountsCoordinator: ObservableObject, AccountsViewCoordinator, AccountsNavigationCoordinator, AccountDetailCoordinator {
     let navigationRouter = NavigationRouter<AccountsRoute>(root: .accounts)
 
     @discardableResult

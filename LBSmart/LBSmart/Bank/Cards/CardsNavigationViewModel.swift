@@ -9,9 +9,9 @@ import SwiftUI
 
 @MainActor
 final class CardsNavigationViewModel: ObservableObject {
-    let coordinator: CardsCoordinator
+    let coordinator: CardsNavigationCoordinator
 
-    init(coordinator: CardsCoordinator) {
+    init(coordinator: CardsNavigationCoordinator) {
         self.coordinator = coordinator
     }
 }

@@ -8,10 +8,10 @@
 import SwiftUI
 
 @MainActor
-final class AccountsNavigationViewModel: ObservableObject {
-    let coordinator: AccountsCoordinator
+final class AccountsNavigationViewModel<C: AccountsNavigationCoordinator>: ObservableObject {
+    let coordinator: C
 
-    init(coordinator: AccountsCoordinator) {
+    init(coordinator: C) {
         self.coordinator = coordinator
     }
 }

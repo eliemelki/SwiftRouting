@@ -9,9 +9,9 @@ import SwiftUI
 
 @MainActor
 final class LoginViewModel: ObservableObject {
-    private let coordinator: BankAppCoordinator
+    private let coordinator: any LoginCoordinator
 
-    init(coordinator: BankAppCoordinator) {
+    init(coordinator: any LoginCoordinator) {
         self.coordinator = coordinator
     }
 

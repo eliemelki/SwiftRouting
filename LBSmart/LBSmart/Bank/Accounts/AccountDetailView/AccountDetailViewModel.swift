@@ -10,9 +10,9 @@ import SwiftUI
 @MainActor
 final class AccountDetailViewModel: ObservableObject {
     let account: BankAccount
-    private let coordinator: any AccountDetailCoordinating
+    private let coordinator: any AccountDetailCoordinator
 
-    init(account: BankAccount, coordinator: any AccountDetailCoordinating) {
+    init(account: BankAccount, coordinator: any AccountDetailCoordinator) {
         self.account = account
         self.coordinator = coordinator
     }

@@ -11,8 +11,8 @@ import SwiftUI
 final class PersonalDetailsViewModel: ObservableObject {
     let name = "Alex Morgan"
     let email = "alex@example.com"
-    private let coordinator: ProfileCoordinator
+    private let coordinator: any PersonalDetailsCoordinator
 
-    init(coordinator: ProfileCoordinator) { self.coordinator = coordinator }
+    init(coordinator: any PersonalDetailsCoordinator) { self.coordinator = coordinator }
     func close() { coordinator.closePersonalDetails() }
 }

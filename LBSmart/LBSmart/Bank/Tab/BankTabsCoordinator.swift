@@ -1,5 +1,5 @@
 //
-//  BankSessionCoordinator.swift
+//  BankTabCoordinator.swift
 //  LBSmart
 //
 //  Created by Elie Melki on 05/10/2026.
@@ -12,10 +12,10 @@ enum BankTab: Route { case accounts, cards, profile }
 
 /// Owns independent navigation coordinators for the signed-in tabs.
 @MainActor
-final class BankTabCoordinator: ObservableObject {
+final class BankTabsCoordinator: ObservableObject {
     let tabRouter = TabRouter<BankTab>(tabs: [.accounts, .cards, .profile])
     let accountsCoordinator = AccountsCoordinator()
-    let cardsCoordinator = CardsCoordinator()
+    let cardsCoordinator = CardsNavigationCoordinator()
     private(set) lazy var profileCoordinator = ProfileCoordinator(sessionCoordinator: self)
     private weak var appCoordinator: BankAppCoordinator?
 

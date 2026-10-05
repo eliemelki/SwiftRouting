@@ -7,6 +7,10 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Changed
 
+- Use `Coordinator` protocol names and consolidate the bank root presentation into the BankApp feature.
+
+- Decouple bank view models through screen-specific coordinator protocols and typed host protocols.
+
 - Return navigation entries from `push` and support popping an exact occurrence or returning to it.
 
 - Dismiss a sheet subtree in one transition, then deliver callbacks once from top to bottom.
