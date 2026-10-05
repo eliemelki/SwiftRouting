@@ -7,10 +7,10 @@
 
 import SwiftUI
 
-struct CardsView<C: CardsPagingCoordinator>: View {
-    @StateObject private var viewModel: CardsViewModel<C>
+struct CardsView: View {
+    @StateObject private var viewModel: CardsViewModel
 
-    init(viewModel: CardsViewModel<C>) {
+    init(viewModel: CardsViewModel) {
         _viewModel = StateObject(wrappedValue: viewModel)
     }
 
@@ -24,7 +24,6 @@ struct CardsView<C: CardsPagingCoordinator>: View {
                 viewModel.coordinator.makeCardView(for: card)
             }
             .indexViewStyle(.page(backgroundDisplayMode: .always))
-            .frame(height: 360)
             Spacer()
         }
         .padding(.top, 16)

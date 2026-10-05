@@ -8,10 +8,10 @@
 import SwiftUI
 
 @MainActor
-final class CardsViewModel<C: CardsPagingCoordinator>: ObservableObject {
-    let coordinator: C
+final class CardsViewModel: ObservableObject {
+    let coordinator: CardsViewCoordinator
 
-    init(coordinator: C) {
+    init(coordinator: CardsViewCoordinator) {
         self.coordinator = coordinator
     }
 }

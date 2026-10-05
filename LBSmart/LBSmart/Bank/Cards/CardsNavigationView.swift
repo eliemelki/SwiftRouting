@@ -8,7 +8,7 @@
 import SwiftUI
 import SwiftRouting
 
-struct CardsNavigationView<C: CardsNavigationCoordinator>: View {
+struct CardsNavigationView: View {
     @StateObject private var viewModel: CardsNavigationViewModel
 
     init(viewModel: CardsNavigationViewModel) {

@@ -284,17 +284,20 @@ consumer APIs remain public.
 - **Sign out:** returns to login and releases the session. Signing in again creates
   fresh tabs, navigation paths, and pager state.
 
-`BankAppCoordinator` controls the login/signed-in root state. `BankTabCoordinator`
+`BankAppCoordinator` controls the login/signed-in root state. `BankTabsCoordinator`
 owns `TabRouter` and the three tab coordinators. `AccountsCoordinator`,
-`CardsCoordinator`, and `ProfileCoordinator` each own a `NavigationRouter`;
-Cards also owns its pager, and Profile owns its sheet router. Only the tab hosts
+`CardsNavigationCoordinator`, and `ProfileCoordinator` each own a `NavigationRouter`;
+`CardsPagingCoordinator` owns the card pager separately, and Profile owns its sheet
+router. Only the tab hosts
 create navigation stacks, avoiding a navigation stack wrapped around the tab bar.
 Action-only models use protocols such as `LoginCoordinator`, `ProfileViewCoordinator`,
-and `AccountDetailCoordinator`. Navigation and tab hosts use generic coordinator
-protocols with associated destination view types, preserving typed view builders.
+and `AccountDetailCoordinator`. The app, tab, and Cards container hosts use concrete
+coordinators. The Cards view
+and view model use `CardsPagingCoordinator` directly, without generics or a container
+protocol. Accounts and Profile retain their typed container protocols.
 Each protocol lives in its own Swift file beside its screen or host.
 
-The app view model relays `BankAppViewCoordinator.routePublisher` into its own published
+The app view model relays `BankAppCoordinator.routePublisher` into its own published
 `route`. The view observes the model, so it needs this relay to redraw when login
 state changes in the coordinator. `assign(to: &$route)` keeps the subscription
 alive for the model's published property without a separate cancellable. The app

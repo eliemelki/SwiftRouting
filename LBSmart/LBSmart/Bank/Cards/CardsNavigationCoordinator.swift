@@ -1,5 +1,5 @@
 //
-//  CardsCoordinator.swift
+//  CardsNavigationCoordinator.swift
 //  LBSmart
 //
 //  Created by Elie Melki on 05/10/2026.
@@ -11,9 +11,9 @@ import SwiftRouting
 enum CardsRoute: Route { case cards, accountDetail(BankAccount) }
 
 @MainActor
-final class CardsNavigationCoordinator: ObservableObject, CardCoordinator, CardsPagingCoordinator, AccountDetailCoordinator {
+final class CardsNavigationCoordinator: ObservableObject, CardCoordinator, AccountDetailCoordinator {
     let navigationRouter = NavigationRouter<CardsRoute>(root: .cards)
-    let pageRouter = PageRouter<BankCard>(pages: BankCard.samples)
+    private(set) lazy var pagingCoordinator = CardsViewCoordinator(navigationCoordinator: self)
 
     @discardableResult
     func showLinkedAccount(for card: BankCard) -> RouteEntry<CardsRoute> {
@@ -28,13 +28,9 @@ final class CardsNavigationCoordinator: ObservableObject, CardCoordinator, Cards
     func makeView(for route: CardsRoute) -> some View {
         switch route {
         case .cards:
-            CardsView(viewModel: CardsViewModel(coordinator: self))
+            CardsView(viewModel: CardsViewModel(coordinator: pagingCoordinator))
         case .accountDetail(let account):
             AccountDetailView(viewModel: AccountDetailViewModel(account: account, coordinator: self))
         }
-    }
-
-    func makeCardView(for card: BankCard) -> CardView {
-        CardView(viewModel: CardViewModel(card: card, coordinator: self))
     }
 }

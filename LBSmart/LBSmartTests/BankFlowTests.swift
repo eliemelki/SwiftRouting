@@ -40,11 +40,11 @@ import Testing
     #expect(session.accountsCoordinator.navigationRouter.path.isEmpty)
     AccountDetailViewModel(account: card.account, coordinator: session.cardsCoordinator).close()
     #expect(session.cardsCoordinator.navigationRouter.path.isEmpty)
-    session.cardsCoordinator.pageRouter.next(animated: false)
-    #expect(session.cardsCoordinator.pageRouter.selection?.route == card)
+    session.cardsCoordinator.pagingCoordinator.pageRouter.next(animated: false)
+    #expect(session.cardsCoordinator.pagingCoordinator.pageRouter.selection?.route == card)
     session.tabRouter.select(.accounts)
     session.tabRouter.select(.cards)
-    #expect(session.cardsCoordinator.pageRouter.selection?.route == card)
+    #expect(session.cardsCoordinator.pagingCoordinator.pageRouter.selection?.route == card)
 }
 
 @MainActor
@@ -69,7 +69,9 @@ import Testing
     app.signIn()
     weak var session = app.tabCoordinator
     weak var profile = app.tabCoordinator?.profileCoordinator
+    weak var paging = app.tabCoordinator?.cardsCoordinator.pagingCoordinator
     app.signOut()
+    #expect(paging == nil)
     #expect(session == nil)
     #expect(profile == nil)
 }

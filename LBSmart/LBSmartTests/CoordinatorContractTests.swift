@@ -5,8 +5,6 @@
 //  Created by Elie Melki on 05/10/2026.
 //
 
-import Combine
-import SwiftUI
 import Testing
 @testable import LBSmart
 
@@ -28,15 +26,6 @@ private final class ProfileCoordinatorSpy: ProfileViewCoordinator {
 }
 
 @MainActor
-private final class BankAppCoordinatorStub: BankAppViewCoordinator {
-    private let routes = CurrentValueSubject<BankAppRoute, Never>(.login)
-    var routePublisher: AnyPublisher<BankAppRoute, Never> { routes.eraseToAnyPublisher() }
-
-    func changeRoot(to route: BankAppRoute) { routes.send(route) }
-    func makeView(for route: BankAppRoute) -> some View { Text(String(describing: route)) }
-}
-
-@MainActor
 @Test func testScreenModelsWorkWithCoordinatorProtocolsOnly() {
     let login = LoginCoordinatorSpy()
     LoginViewModel(coordinator: login).signIn()
@@ -53,16 +42,16 @@ private final class BankAppCoordinatorStub: BankAppViewCoordinator {
 }
 
 @MainActor
-@Test func testRootModelRelaysProtocolPublisherAndReleasesSubscription() {
-    let coordinator = BankAppCoordinatorStub()
-    var model: BankAppViewModel<BankAppCoordinatorStub>? = BankAppViewModel(coordinator: coordinator)
+@Test func testRootModelRelaysCoordinatorStateAndReleasesSubscription() {
+    let coordinator = BankAppCoordinator()
+    var model: BankAppViewModel? = BankAppViewModel(coordinator: coordinator)
     weak var weakModel = model
     #expect(model?.route == .login)
-    coordinator.changeRoot(to: .signedIn)
+    coordinator.signIn()
     #expect(model?.route == .signedIn)
-    coordinator.changeRoot(to: .login)
+    coordinator.signOut()
     #expect(model?.route == .login)
     model = nil
     #expect(weakModel == nil)
-    coordinator.changeRoot(to: .signedIn)
+    coordinator.signIn()
 }
