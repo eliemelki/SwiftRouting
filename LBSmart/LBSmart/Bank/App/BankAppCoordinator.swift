@@ -5,10 +5,12 @@
 //  Created by Elie Melki on 05/10/2026.
 //
 
-import SwiftUI
 import SwiftRouting
+import SwiftUI
 
-enum BankAppRoute: Route { case login, signedIn }
+enum BankAppRoute: Route {
+    case login, signedIn
+}
 
 /// Owns the login flow and the lifetime of a signed-in session.
 @MainActor
@@ -17,7 +19,9 @@ final class BankAppCoordinator: LoginCoordinator {
     private(set) var tabCoordinator: BankTabsCoordinator?
 
     func signIn() {
-        guard tabCoordinator == nil else { return }
+        guard tabCoordinator == nil else {
+            return
+        }
         tabCoordinator = BankTabsCoordinator(appCoordinator: self)
         stateRouter.set(.signedIn)
     }

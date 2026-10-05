@@ -13,6 +13,10 @@ final class PersonalDetailsViewModel: ObservableObject {
     let email = "alex@example.com"
     private let coordinator: any PersonalDetailsCoordinator
 
-    init(coordinator: any PersonalDetailsCoordinator) { self.coordinator = coordinator }
-    func close() { coordinator.closePersonalDetails() }
+    init(coordinator: any PersonalDetailsCoordinator) {
+        self.coordinator = coordinator
+    }
+    func close() {
+        coordinator.closePersonalDetails()
+    }
 }

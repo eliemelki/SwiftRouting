@@ -6,6 +6,7 @@
 //
 
 import Foundation
+
 /// An operation executed on the main actor by a serial queue.
 public typealias SerialQueueOperation<T> = @MainActor () async -> T
 
@@ -17,22 +18,25 @@ public final class SerialQueue {
     private var waiters: [CheckedContinuation<Void, Never>] = []
 
     /// Creates an idle queue.
-    public init() {}
+    public init() {
+    }
 
     /// Waits for preceding operations, then runs this operation to completion.
     /// - Parameter operation: The main-actor async work to serialize.
     /// - Returns: The value returned by the operation.
     public func execute<T>(operation: SerialQueueOperation<T>) async -> T {
         if isExecuting {
-            await withCheckedContinuation { waiters.append($0) }
-        }else {
+            await withCheckedContinuation {
+                waiters.append($0)
+            }
+        } else {
             isExecuting = true
         }
 
         defer {
             if waiters.isEmpty {
                 isExecuting = false
-            }else {
+            } else {
                 waiters.removeFirst().resume()
             }
         }

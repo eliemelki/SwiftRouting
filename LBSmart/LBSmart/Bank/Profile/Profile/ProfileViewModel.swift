@@ -17,7 +17,13 @@ final class ProfileViewModel: ObservableObject {
         self.coordinator = coordinator
     }
 
-    func showPersonalDetails() { coordinator.showPersonalDetails() }
-    func showInfo(_ info: ProfileInfoRoute) { coordinator.showInfo(info) }
-    func signOut() { coordinator.signOut() }
+    func showPersonalDetails() {
+        coordinator.showPersonalDetails()
+    }
+    func showInfo(_ info: ProfileInfoRoute) {
+        coordinator.showInfo(info)
+    }
+    func signOut() {
+        coordinator.signOut()
+    }
 }

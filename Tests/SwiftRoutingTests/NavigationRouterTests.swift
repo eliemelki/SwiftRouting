@@ -1,3 +1,5 @@
+import Testing
+
 //
 //  NavigationRouterTests.swift
 //  SwiftRouting
@@ -5,7 +7,6 @@
 //  Created by Elie Melki on 22/04/2025.
 //
 @testable import SwiftRouting
-import Testing
 
 @MainActor
 @Test func testNavigationRouter() async throws {
@@ -16,7 +17,6 @@ import Testing
     router.setRoot(firstRoute)
     #expect(router.root == firstRoute)
     #expect(router.path.count == 0)
-
 
     router.push(firstRoute)
     #expect(router.root == firstRoute)
@@ -73,4 +73,39 @@ import Testing
     router.pop(entry: first)
     #expect(router.path.isEmpty)
     #expect(router.root == .first)
+}
+
+@MainActor
+@Test func testChangingRootPreservesEntryIdentities() {
+    let router = NavigationRouter<TestRoute>(root: .first)
+    let first = router.push(.first, animated: false)
+    let second = router.push(.second, animated: false)
+    router.setRoot(.second)
+    #expect(router.root == .second)
+    #expect(router.path == [first, second])
+    router.popToRoot(animated: false)
+    #expect(router.root == .second)
+    #expect(router.path.isEmpty)
+}
+
+@MainActor
+@Test func testNavigationRejectsEntriesFromAnotherRouter() {
+    let router = NavigationRouter<TestRoute>(root: .first)
+    let other = NavigationRouter<TestRoute>(root: .first)
+    let local = router.push(.second, animated: false)
+    let foreign = other.push(.second, animated: false)
+    router.pop(entry: foreign, animated: false)
+    router.pop(to: foreign, animated: false)
+    #expect(router.path == [local])
+    #expect(other.path == [foreign])
+}
+
+@Test func testRouteEntryCopyPreservesIdentityAndHashing() {
+    let entry = RouteEntry(TestRoute.first)
+    let copy = entry
+    let repeated = RouteEntry(TestRoute.first)
+    #expect(copy == entry)
+    #expect(copy.id == entry.id)
+    #expect(repeated != entry)
+    #expect(Set([entry, copy, repeated]).count == 2)
 }

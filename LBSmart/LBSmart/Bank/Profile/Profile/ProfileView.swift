@@ -30,7 +30,9 @@ struct ProfileView: View {
             }
             Section("Information") {
                 ForEach(viewModel.infoLinks, id: \.self) { info in
-                    Button { viewModel.showInfo(info) } label: {
+                    Button {
+                        viewModel.showInfo(info)
+                    } label: {
                         HStack {
                             Text(info.title)
                             Spacer()

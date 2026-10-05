@@ -12,11 +12,17 @@ final class InfoSheetViewModel: ObservableObject {
     @Published private(set) var isExpanded = false
     let info: ProfileInfoRoute
 
-    var usesDynamicHeight: Bool { info != .support }
+    var usesDynamicHeight: Bool {
+        info != .support
+    }
     var additionalInformation: String {
         switch info {
-        case .security: return "Review your devices regularly and lock your card if it is misplaced. Never share a one-time verification code with another person."
-        case .privacy: return "Signing out clears the sample banking session. The next sign-in starts with fresh navigation and card selection. No account information is saved to disk."
+        case .security:
+            return
+                "Review your devices regularly and lock your card if it is misplaced. Never share a one-time verification code with another person."
+        case .privacy:
+            return
+                "Signing out clears the sample banking session. The next sign-in starts with fresh navigation and card selection. No account information is saved to disk."
         case .support: return "Contact your bank directly for help with a real account."
         }
     }
@@ -27,7 +33,11 @@ final class InfoSheetViewModel: ObservableObject {
         self.coordinator = coordinator
     }
 
-    func toggleDetails() { isExpanded.toggle() }
+    func toggleDetails() {
+        isExpanded.toggle()
+    }
 
-    func close() { coordinator.closeInfo() }
+    func close() {
+        coordinator.closeInfo()
+    }
 }

@@ -17,9 +17,9 @@ public typealias SheetDismissHandler = () -> Void
 public class SheetRouter<T: Route>: ObservableObject {
 
     /// The callback belonging to the active full-screen occurrence.
-    var onFullScreenDismiss: SheetDismissHandler?
+    private var onFullScreenDismiss: SheetDismissHandler?
     /// The callback belonging to the active partial-sheet occurrence.
-    var onPartialDismiss: SheetDismissHandler?
+    private var onPartialDismiss: SheetDismissHandler?
 
     /// Resumes the queued hide after SwiftUI completes dismissal.
     private var dismissalCompletion: SheetDismissHandler?
@@ -36,14 +36,17 @@ public class SheetRouter<T: Route>: ObservableObject {
     lazy var queue: SerialQueue = .init()
 
     /// Creates a router with no active presentation.
-    public init() {}
+    public init() {
+    }
 }
 
 extension SheetRouter {
 
     /// Consumes the matching dismissal callback and resumes the queued operation.
-    func finishDismissal(entry: RouteEntry<T>?, sheetType: SheetType, onDismiss: SheetDismissHandler?) {
-        guard activeSheetType == sheetType, entry == nil else { return }
+    private func finishDismissal(entry: RouteEntry<T>?, sheetType: SheetType, onDismiss: SheetDismissHandler?) {
+        guard activeSheetType == sheetType, entry == nil else {
+            return
+        }
         let completion = dismissalCompletion
         activeSheetType = nil
         onFullScreenDismiss = nil
@@ -63,7 +66,7 @@ extension SheetRouter {
     }
 
     /// Clears presentation entries and completes after the matching onDismiss callback.
-    func hidePresentation(animated: Bool, completion: @escaping SheetDismissHandler) {
+    private func hidePresentation(animated: Bool, completion: @escaping SheetDismissHandler) {
         // A swipe clears the binding before onDismiss. Still wait for that callback.
         guard activeSheetType != nil else {
             completion()
@@ -88,7 +91,9 @@ extension SheetRouter {
     /// Clears a child presenter after its parent has finished dismissing the subtree.
     /// SwiftUI may already have delivered this child's callback; completion is idempotent.
     func finishDismissalAfterParent() {
-        guard let sheetType = activeSheetType else { return }
+        guard let sheetType = activeSheetType else {
+            return
+        }
         runWithAnimation(animated: false) {
             fullScreenEntry = nil
             partialEntry = nil
@@ -99,8 +104,12 @@ extension SheetRouter {
     /// Replaces the presentation without entering a queue.
     /// The caller must serialize this operation with any other presentation changes.
     @discardableResult
-    func showPresentation(_ route: T, sheetType: SheetType, animated: Bool,
-                          onDismiss: SheetDismissHandler?) async -> RouteEntry<T> {
+    func showPresentation(
+        _ route: T,
+        sheetType: SheetType,
+        animated: Bool,
+        onDismiss: SheetDismissHandler?
+    ) async -> RouteEntry<T> {
         let entry = RouteEntry(route)
         await hidePresentation(animated: animated)
         runWithAnimation(animated: animated) {
@@ -115,5 +124,17 @@ extension SheetRouter {
             }
         }
         return entry
+    }
+}
+
+extension SheetRouter {
+    /// Handles SwiftUI completing a full-screen dismissal.
+    func didDismissFullScreen() {
+        finishDismissal(entry: self.fullScreenEntry, sheetType: .fullScreen, onDismiss: self.onFullScreenDismiss)
+    }
+
+    /// Handles SwiftUI completing a partial-sheet dismissal.
+    func didDismissPartialSheet() {
+        finishDismissal(entry: self.partialEntry, sheetType: .partial, onDismiss: self.onPartialDismiss)
     }
 }

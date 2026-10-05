@@ -7,14 +7,20 @@
 
 import SwiftUI
 
-private enum PageDemoRoute: String, Route { case first, second, third }
+private enum PageDemoRoute: String, Route {
+    case first, second, third
+}
 
 @MainActor
 private class PageCoordinator: ObservableObject {
     let pageRouter = PageRouter<PageDemoRoute>(pages: [.first, .second, .third])
 
-    func next() { pageRouter.next() }
-    func previous() { pageRouter.previous() }
+    func next() {
+        pageRouter.next()
+    }
+    func previous() {
+        pageRouter.previous()
+    }
 }
 
 struct PageDemoView: View {
@@ -35,4 +41,6 @@ struct PageDemoView: View {
     }
 }
 
-#Preview { PageDemoView() }
+#Preview {
+    PageDemoView()
+}

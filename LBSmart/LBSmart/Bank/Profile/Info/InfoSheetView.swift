@@ -5,8 +5,8 @@
 //  Created by Elie Melki on 05/10/2026.
 //
 
-import SwiftUI
 import SwiftRouting
+import SwiftUI
 
 struct InfoSheetView: View {
     @StateObject private var viewModel: InfoSheetViewModel
@@ -20,8 +20,10 @@ struct InfoSheetView: View {
             if viewModel.usesDynamicHeight {
                 sheetContent.dynamicSheetSize()
             } else {
-                ScrollView { sheetContent }
-                    .presentationDetents([.medium, .large])
+                ScrollView {
+                    sheetContent
+                }
+                .presentationDetents([.medium, .large])
             }
         }
         .presentationDragIndicator(.visible)

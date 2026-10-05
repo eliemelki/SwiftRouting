@@ -37,9 +37,13 @@ private struct DynamicSheetSizeModifier: ViewModifier {
         }
         .presentationDetents([contentHeight > 0 ? .height(contentHeight) : .large])
         .onPreferenceChange(SheetContentHeightKey.self) { height in
-            guard height.isFinite, height > 0 else { return }
+            guard height.isFinite, height > 0 else {
+                return
+            }
             let roundedHeight = ceil(height)
-            guard roundedHeight != contentHeight else { return }
+            guard roundedHeight != contentHeight else {
+                return
+            }
             contentHeight = roundedHeight
         }
     }

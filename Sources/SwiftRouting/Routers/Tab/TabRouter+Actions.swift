@@ -13,7 +13,13 @@ extension TabRouter {
     ///   - route: The destination to select.
     ///   - animated: Whether to allow the selection transition to animate.
     public func select(_ route: T, animated: Bool = true) {
-        guard let entry = tabs.first(where: { $0.route == route }) else { return }
+        guard
+            let entry = tabs.first(where: {
+                $0.route == route
+            })
+        else {
+            return
+        }
         select(entry, animated: animated)
     }
 
@@ -22,7 +28,9 @@ extension TabRouter {
     ///   - entry: An entry from this router. An unknown entry does nothing.
     ///   - animated: Whether to allow the selection transition to animate.
     public func select(_ entry: RouteEntry<T>, animated: Bool = true) {
-        guard tabs.contains(entry), selection != entry else { return }
+        guard tabs.contains(entry), selection != entry else {
+            return
+        }
         runWithAnimation(animated: animated) {
             selection = entry
         }
@@ -33,7 +41,9 @@ extension TabRouter {
     ///   - index: The position to select. Invalid indices do nothing.
     ///   - animated: Whether to allow the selection transition to animate.
     public func select(index: Int, animated: Bool = true) {
-        guard tabs.indices.contains(index) else { return }
+        guard tabs.indices.contains(index) else {
+            return
+        }
         select(tabs[index], animated: animated)
     }
 }

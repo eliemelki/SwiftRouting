@@ -5,10 +5,13 @@
 //  Created by Elie Melki on 05/10/2026.
 //
 
-import SwiftUI
 import SwiftRouting
+import SwiftUI
 
-enum CardsRoute: Route { case cards, accountDetail(BankAccount) }
+enum CardsRoute: Route {
+    case cards
+    case accountDetail(BankAccount)
+}
 
 @MainActor
 final class CardsNavigationCoordinator: CardCoordinator, AccountDetailCoordinator {

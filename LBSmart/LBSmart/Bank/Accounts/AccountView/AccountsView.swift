@@ -26,7 +26,9 @@ struct AccountsView: View {
             }
             Section("Your accounts") {
                 ForEach(viewModel.accounts) { account in
-                    Button { viewModel.showAccount(account) } label: {
+                    Button {
+                        viewModel.showAccount(account)
+                    } label: {
                         HStack {
                             VStack(alignment: .leading, spacing: 6) {
                                 Text(account.name).font(.headline)

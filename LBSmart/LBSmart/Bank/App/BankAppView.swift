@@ -18,6 +18,6 @@ struct BankAppView: View {
         viewModel.coordinator.stateRouter.view { route in
             viewModel.coordinator.makeView(for: route)
         }
-            .tint(.teal)
+        .tint(.teal)
     }
 }

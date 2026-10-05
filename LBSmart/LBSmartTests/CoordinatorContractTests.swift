@@ -6,12 +6,15 @@
 //
 
 import Testing
+
 @testable import LBSmart
 
 @MainActor
 private final class LoginCoordinatorSpy: LoginCoordinator {
     private(set) var signInCount = 0
-    func signIn() { signInCount += 1 }
+    func signIn() {
+        signInCount += 1
+    }
 }
 
 @MainActor
@@ -20,9 +23,15 @@ private final class ProfileCoordinatorSpy: ProfileViewCoordinator {
     private(set) var didShowDetails = false
     private(set) var didSignOut = false
 
-    func showPersonalDetails() { didShowDetails = true }
-    func showInfo(_ info: ProfileInfoRoute) { openedInfo = info }
-    func signOut() { didSignOut = true }
+    func showPersonalDetails() {
+        didShowDetails = true
+    }
+    func showInfo(_ info: ProfileInfoRoute) {
+        openedInfo = info
+    }
+    func signOut() {
+        didSignOut = true
+    }
 }
 
 @MainActor

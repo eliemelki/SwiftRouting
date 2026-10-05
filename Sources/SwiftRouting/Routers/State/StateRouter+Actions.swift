@@ -13,7 +13,9 @@ extension StateRouter {
     ///   - route: The destination to show.
     ///   - animated: Whether to allow the replacement to animate.
     public func set(_ route: T, animated: Bool = true) {
-        guard self.route != route else { return }
+        guard self.route != route else {
+            return
+        }
         runWithAnimation(animated: animated) {
             self.route = route
         }

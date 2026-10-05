@@ -7,9 +7,9 @@
 import SwiftUI
 
 /// Adds a single-sheet presenter to existing content.
-public struct SheetRouterViewModifier<T: Route, V: View> : ViewModifier {
+public struct SheetRouterViewModifier<T: Route, V: View>: ViewModifier {
 
-    @ObservedObject var router: SheetRouter<T>
+    @ObservedObject private var router: SheetRouter<T>
     private let makeView: @MainActor (T) -> V
 
     /// Creates a view using an externally owned router.
@@ -42,9 +42,9 @@ public extension View {
 }
 
 /// Renders destinations for one partial sheet or full-screen cover.
-public struct SheetRouterView<T: Route, V: View> : View {
+public struct SheetRouterView<T: Route, V: View>: View {
 
-    @ObservedObject var router: SheetRouter<T>
+    @ObservedObject private var router: SheetRouter<T>
     private let makeView: @MainActor (T) -> V
 
     /// Creates a view using an externally owned router.
@@ -57,6 +57,7 @@ public struct SheetRouterView<T: Route, V: View> : View {
     }
 
     public var body: some View {
-        VStack{}.sheetRouterView(router, makeView: makeView)
+        VStack {
+        }.sheetRouterView(router, makeView: makeView)
     }
 }

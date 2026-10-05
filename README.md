@@ -4,6 +4,18 @@ SwiftRouting separates SwiftUI destination views from the code that decides when
 to navigate, present a sheet, switch tabs, change pages, or replace the current view. It supports iOS 16 and
 later and uses Swift 6.
 
+## Installation
+
+Add `https://github.com/eliemelki/SwiftRouting.git` in Xcode's package dependencies
+and choose version **2.0.0** or later within the 2.x major version.
+
+```swift
+.package(url: "https://github.com/eliemelki/SwiftRouting.git", from: "2.0.0")
+```
+
+For upgrades from 1.x, follow the [migration guide](MIGRATION.md).
+See the [changelog](CHANGELOG.md) for release details.
+
 ## Routes and entries
 
 A `Route` is a `Hashable & Sendable` destination value. Use an enum or struct and
@@ -48,7 +60,7 @@ values; the host view supplies their destination views.
 | `StateRouter<T>` | One current destination, replaced without navigation history. |
 | `NavigationRouter<T>` | A root destination with a stack of pushed entries. |
 | `SheetRouter<T>` | One partial sheet or full-screen cover; showing another replaces it. |
-| `SheetsRouter<T>` | A stack of partial sheets and full-screen covers. |
+| `StackSheetsRouter<T>` | A stack of partial sheets and full-screen covers. |
 | `TabRouter<T>` | A fixed collection of tabs with a selected entry. |
 | `PageRouter<T>` | A fixed collection of swipeable pages with a selected entry. |
 
@@ -195,11 +207,11 @@ Tap **Learn more** or **Show less** to change their content and sheet height.
 ```swift
 @MainActor
 struct StackedSheetsExample: View {
-    @StateObject private var router = SheetsRouter<AppRoute>()
+    @StateObject private var router = StackSheetsRouter<AppRoute>()
 
     var body: some View {
         Button("Show detail") { router.show(.detail(42)) }
-            .sheetsRouterView(router) { route in
+            .stackSheetsRouterView(router) { route in
                 destination(for: route)
             }
     }
@@ -216,7 +228,7 @@ struct StackedSheetsExample: View {
   Entries from another router or an earlier presentation do nothing.
 - `hideAll(animated:)` dismisses all sheets.
 
-Stack actions enter only the `SheetsRouter` queue. Its child presenters run their
+Stack actions enter only the `StackSheetsRouter` queue. Its child presenters run their
 internal presentation methods directly; standalone `SheetRouter` actions use their
 own queue. Hiding multiple sheets dismisses the lowest targeted presenter and
 its subtree in one transition. After that presenter completes dismissal, the
@@ -226,7 +238,7 @@ The async `show` and `replace` overloads return an optional entry; nil means the
 router was unavailable when its queued action ran. Synchronous overloads schedule
 a task and return immediately. Attach a stacked-sheet host to deliver callbacks.
 
-See [SheetsRouterDemo](Sources/SwiftRouting/Routers/Sheets/SheetsRouter/SheetsRouterDemo.swift).
+See [StackSheetsRouterDemo](Sources/SwiftRouting/Routers/Sheets/StackSheetsRouter/StackSheetsRouterDemo.swift).
 
 ### Tabs
 

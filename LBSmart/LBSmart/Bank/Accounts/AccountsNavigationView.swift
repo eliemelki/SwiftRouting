@@ -5,8 +5,8 @@
 //  Created by Elie Melki on 05/10/2026.
 //
 
-import SwiftUI
 import SwiftRouting
+import SwiftUI
 
 struct AccountsNavigationView<C: AccountsNavigationCoordinator>: View {
     @StateObject private var viewModel: AccountsNavigationViewModel<C>

@@ -21,19 +21,14 @@ public class PageRouter<T: Route>: ObservableObject {
     ///   - pages: Destination values in display order. Repeated routes get distinct IDs.
     ///   - selected: The route to select first. Nil or an unknown route selects the first entry.
     public init(pages: [T], selected: T? = nil) {
-        let entries = pages.map { RouteEntry($0) }
+        let entries = pages.map {
+            RouteEntry($0)
+        }
         self.pages = entries
-        self.selection = entries.first { $0.route == selected } ?? entries.first
-    }
+        self.selection =
+            entries.first {
+                $0.route == selected
+            } ?? entries.first
 
-    // User interaction and coordinator actions share the same validation.
-    var selectionBinding: Binding<RouteEntry<T>?> {
-        Binding(
-            get: { self.selection },
-            set: { entry in
-                guard let entry else { return }
-                self.select(entry, animated: false)
-            }
-        )
     }
 }

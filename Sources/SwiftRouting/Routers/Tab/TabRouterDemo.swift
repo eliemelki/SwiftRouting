@@ -7,14 +7,20 @@
 
 import SwiftUI
 
-private enum TabDemoRoute: Route { case home, settings }
+private enum TabDemoRoute: Route {
+    case home, settings
+}
 
 @MainActor
 private class TabCoordinator: ObservableObject {
     let tabRouter = TabRouter<TabDemoRoute>(tabs: [.home, .settings])
 
-    func showSettings() { tabRouter.select(.settings) }
-    func showHome() { tabRouter.select(.home) }
+    func showSettings() {
+        tabRouter.select(.settings)
+    }
+    func showHome() {
+        tabRouter.select(.home)
+    }
 
     @ViewBuilder
     func makeView(_ route: TabDemoRoute) -> some View {
@@ -48,4 +54,6 @@ struct TabDemoView: View {
     }
 }
 
-#Preview { TabDemoView() }
+#Preview {
+    TabDemoView()
+}

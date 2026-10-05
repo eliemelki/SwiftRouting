@@ -29,7 +29,9 @@ extension NavigationRouter {
     /// Removes the last pushed destination. An empty path is unchanged.
     /// - Parameter animated: Whether to allow the navigation transition to animate.
     public func popLast(animated: Bool = true) {
-        guard !path.isEmpty else { return }
+        guard !path.isEmpty else {
+            return
+        }
         runWithAnimation(animated: animated) {
             path.removeLast()
         }
@@ -40,7 +42,9 @@ extension NavigationRouter {
     ///   - entry: An entry returned by `push`. An entry absent from this path does nothing.
     ///   - animated: Whether to allow the navigation transition to animate.
     public func pop(entry: RouteEntry<T>, animated: Bool = true) {
-        guard let index = path.firstIndex(of: entry) else { return }
+        guard let index = path.firstIndex(of: entry) else {
+            return
+        }
         runWithAnimation(animated: animated) {
             path.removeSubrange(index...)
         }
@@ -51,7 +55,9 @@ extension NavigationRouter {
     ///   - entry: An entry returned by `push`. An entry absent from this path does nothing.
     ///   - animated: Whether to allow the navigation transition to animate.
     public func pop(to entry: RouteEntry<T>, animated: Bool = true) {
-        guard let index = path.firstIndex(of: entry), index < path.count - 1 else { return }
+        guard let index = path.firstIndex(of: entry), index < path.count - 1 else {
+            return
+        }
         runWithAnimation(animated: animated) {
             path.removeSubrange((index + 1)...)
         }

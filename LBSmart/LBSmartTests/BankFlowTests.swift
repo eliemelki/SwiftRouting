@@ -6,6 +6,7 @@
 //
 
 import Testing
+
 @testable import LBSmart
 
 @MainActor
@@ -84,8 +85,9 @@ import Testing
     let model = ProfileViewModel(coordinator: profile)
     model.showInfo(.security)
     // Drain the fire-and-forget action before inspecting its presentation entry.
-    while !profile.sheetRouter.isPresentingSheet { await Task.yield() }
+    while !profile.sheetRouter.isPresentingSheet {
+        await Task.yield()
+    }
     #expect(profile.sheetRouter.partialEntry?.route == .security)
     #expect(profile.sheetRouter.fullScreenEntry == nil)
 }
-

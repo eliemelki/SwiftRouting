@@ -27,10 +27,19 @@ extension SheetRouter {
     ///   - onDismiss: Called once when this presentation is dismissed, including replacement.
     /// - Returns: The unique entry assigned to this presentation.
     @discardableResult
-    public func show(_ route: T, sheetType: SheetType = .partial, animated: Bool = true,
-                     onDismiss: SheetDismissHandler? = nil) async -> RouteEntry<T> {
+    public func show(
+        _ route: T,
+        sheetType: SheetType = .partial,
+        animated: Bool = true,
+        onDismiss: SheetDismissHandler? = nil
+    ) async -> RouteEntry<T> {
         await queue.execute {
-            await self.showPresentation(route, sheetType: sheetType, animated: animated, onDismiss: onDismiss)
+            await self.showPresentation(
+                route,
+                sheetType: sheetType,
+                animated: animated,
+                onDismiss: onDismiss
+            )
         }
     }
 
@@ -49,8 +58,12 @@ extension SheetRouter {
 
     /// The type of the current presentation entry, or nil when both bindings are empty.
     public var presentedSheetType: SheetType? {
-        if fullScreenEntry != nil { return .fullScreen }
-        if partialEntry != nil { return .partial }
+        if fullScreenEntry != nil {
+            return .fullScreen
+        }
+        if partialEntry != nil {
+            return .partial
+        }
         return nil
     }
 }
@@ -60,7 +73,9 @@ public extension SheetRouter {
     /// Use the async overload to wait for the dismissal callback.
     /// - Parameter animated: Whether to allow the dismissal transition to animate.
     func hide(animated: Bool = true) {
-        Task { await self.hide(animated: animated) }
+        Task {
+            await self.hide(animated: animated)
+        }
     }
 
     /// Schedules a presentation in a task and returns without waiting.
@@ -70,8 +85,19 @@ public extension SheetRouter {
     ///   - sheetType: A partial sheet or a full-screen cover.
     ///   - animated: Whether to allow dismissal and presentation animations.
     ///   - onDismiss: Called once when this presentation is dismissed.
-    func show(_ route: T, sheetType: SheetType = .partial, animated: Bool = true,
-              onDismiss: SheetDismissHandler? = nil) {
-        Task { await self.show(route, sheetType: sheetType, animated: animated, onDismiss: onDismiss) }
+    func show(
+        _ route: T,
+        sheetType: SheetType = .partial,
+        animated: Bool = true,
+        onDismiss: SheetDismissHandler? = nil
+    ) {
+        Task {
+            await self.show(
+                route,
+                sheetType: sheetType,
+                animated: animated,
+                onDismiss: onDismiss
+            )
+        }
     }
 }

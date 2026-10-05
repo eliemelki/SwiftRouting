@@ -1,5 +1,5 @@
 //
-//  SheetsRouterDemo.swift
+//  StackSheetsRouterDemo.swift
 //  SwiftRouting
 //
 //  Created by Elie Melki on 03/04/2025.
@@ -7,11 +7,11 @@
 
 import SwiftUI
 
-enum StackedSheetRoute: Route {
+private enum StackedSheetRoute: Route {
     case first, second, replacedSecond, third
 
     @MainActor @ViewBuilder
-    func makeView(coordinator: SheetsCoordinator) -> some View {
+    func makeView(coordinator: StackSheetsCoordinator) -> some View {
         switch self {
         case .first: TestView1(coordinator: coordinator)
         case .second: TestView2(coordinator: coordinator)
@@ -22,60 +22,70 @@ enum StackedSheetRoute: Route {
 }
 
 @MainActor
-class SheetsCoordinator: ObservableObject {
-    let sheetsRouter = SheetsRouter<StackedSheetRoute>()
+private class StackSheetsCoordinator: ObservableObject {
+    let stackSheetsRouter = StackSheetsRouter<StackedSheetRoute>()
     var secondSheet: RouteEntry<StackedSheetRoute>?
 
     func showFirstSheet() {
-        sheetsRouter.show(.first, animated: false) { print("dismiss First") }
+        stackSheetsRouter.show(.first, animated: false) {
+            print("dismiss First")
+        }
     }
 
     func showSecondSheet() {
         Task {
-            secondSheet = await sheetsRouter.show(.second) { print("dismiss Second") }
+            secondSheet = await stackSheetsRouter.show(.second) {
+                print("dismiss Second")
+            }
         }
     }
 
     func replaceSecondSheet() {
         Task {
-            secondSheet = await sheetsRouter.replace(.replacedSecond) { print("dismiss second Replaced") }
+            secondSheet = await stackSheetsRouter.replace(.replacedSecond) {
+                print("dismiss second Replaced")
+            }
         }
     }
 
     func showThirdSheet() {
-        sheetsRouter.show(.third) { print("dismiss Third") }
+        stackSheetsRouter.show(.third) {
+            print("dismiss Third")
+        }
     }
 
     func hideLast() {
-        sheetsRouter.hide()
+        stackSheetsRouter.hide()
     }
 
     func backToFirst() {
 
-        guard let secondSheet else { return }
-        sheetsRouter.hide(entry: secondSheet)
+        guard let secondSheet else {
+            return
+        }
+        stackSheetsRouter.hide(entry: secondSheet)
     }
 
     func hide() {
-        sheetsRouter.hideAll(animated: false)
+        stackSheetsRouter.hideAll(animated: false)
     }
 }
 
-struct SheetsDemoView: View {
-    @StateObject var coordinator = SheetsCoordinator()
+struct StackSheetsDemoView: View {
+    @StateObject private var coordinator = StackSheetsCoordinator()
 
     var body: some View {
         VStack {
             TestView(coordinator: coordinator)
         }
-        .sheetsRouterView(coordinator.sheetsRouter) { route in
+        .stackSheetsRouterView(coordinator.stackSheetsRouter) { route in
             route.makeView(coordinator: coordinator)
         }
     }
 }
 
-fileprivate struct TestView : View {
-    let coordinator: SheetsCoordinator
+private struct TestView: View {
+    let coordinator: StackSheetsCoordinator
     var body: some View {
         VStack {
             Text("Base")
@@ -87,9 +97,9 @@ fileprivate struct TestView : View {
     }
 }
 
-fileprivate struct TestView1 : View {
-    let coordinator: SheetsCoordinator
-    var body: some  View {
+private struct TestView1: View {
+    let coordinator: StackSheetsCoordinator
+    var body: some View {
         VStack {
             Text("Sheet 1")
             Button("Show Sheet2") {
@@ -100,9 +110,9 @@ fileprivate struct TestView1 : View {
     }
 }
 
-fileprivate struct TestView2 : View {
-    let coordinator: SheetsCoordinator
-    var body: some  View {
+private struct TestView2: View {
+    let coordinator: StackSheetsCoordinator
+    var body: some View {
         VStack {
             Text("Sheet 2")
             Button("Show Sheet3") {
@@ -116,9 +126,9 @@ fileprivate struct TestView2 : View {
     }
 }
 
-fileprivate struct TestView2Replaced : View {
-    let coordinator: SheetsCoordinator
-    var body: some  View {
+private struct TestView2Replaced: View {
+    let coordinator: StackSheetsCoordinator
+    var body: some View {
         VStack {
             Text("Sheet 2 Replaced")
             Button("Show Sheet3") {
@@ -129,9 +139,9 @@ fileprivate struct TestView2Replaced : View {
     }
 }
 
-fileprivate struct TestView3 : View {
-    let coordinator: SheetsCoordinator
-    var body: some  View {
+private struct TestView3: View {
+    let coordinator: StackSheetsCoordinator
+    var body: some View {
         VStack {
             Text("Sheet 3")
             Button("Dissmis All Sheet") {
@@ -150,5 +160,5 @@ fileprivate struct TestView3 : View {
 }
 
 #Preview {
-    SheetsDemoView()
+    StackSheetsDemoView()
 }

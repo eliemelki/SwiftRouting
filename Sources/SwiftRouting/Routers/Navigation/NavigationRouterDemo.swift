@@ -7,18 +7,18 @@
 
 import SwiftUI
 
-enum NavigationRoute: Route {
+private enum NavigationRoute: Route {
     case main
     case first
     case second
 }
 
 @MainActor
-class NavigationCoordinator: ObservableObject, MainCoordinator,
-                             FirstCoordinator,
-                             SecondCoordinator {
+private class NavigationCoordinator: ObservableObject, MainCoordinator,
+    FirstCoordinator,
+    SecondCoordinator {
 
-    let navigationRouter : NavigationRouter<NavigationRoute>
+    let navigationRouter: NavigationRouter<NavigationRoute>
 
     init() {
         navigationRouter = NavigationRouter<NavigationRoute>(root: .main)
@@ -71,11 +71,11 @@ struct NavigationDemoView: View {
 }
 
 @MainActor
-protocol MainCoordinator: AnyObject {
+private protocol MainCoordinator: AnyObject {
     func pushFirst()
 }
 
-class NavigationMainViewModel: ObservableObject {
+private class NavigationMainViewModel: ObservableObject {
     weak var coordinator: MainCoordinator?
 
     init(coordinator: MainCoordinator) {
@@ -83,25 +83,25 @@ class NavigationMainViewModel: ObservableObject {
     }
 }
 
-fileprivate struct NavigationMainView : View {
+private struct NavigationMainView: View {
     @ObservedObject var viewmodel: NavigationMainViewModel
     var body: some View {
         VStack {
             Text("Main")
             Button("Push First") {
-               viewmodel.coordinator?.pushFirst()
+                viewmodel.coordinator?.pushFirst()
             }
         }
     }
 }
 
 @MainActor
-protocol FirstCoordinator: AnyObject {
+private protocol FirstCoordinator: AnyObject {
     func popFirst()
     func pushSecond()
 }
 
-class NavigationFirstViewModel: ObservableObject {
+private class NavigationFirstViewModel: ObservableObject {
     weak var coordinator: FirstCoordinator?
 
     init(coordinator: FirstCoordinator) {
@@ -110,9 +110,9 @@ class NavigationFirstViewModel: ObservableObject {
 
 }
 
-fileprivate struct NavigationFirstView : View {
+private struct NavigationFirstView: View {
     @ObservedObject var viewmodel: NavigationFirstViewModel
-    var body: some  View {
+    var body: some View {
         VStack {
             Text("View 1")
             Button("Push Second") {
@@ -128,12 +128,12 @@ fileprivate struct NavigationFirstView : View {
 }
 
 @MainActor
-protocol SecondCoordinator: AnyObject {
+private protocol SecondCoordinator: AnyObject {
     func popSecond()
     func popAll()
 }
 
-class NavigationSecondViewModel: ObservableObject {
+private class NavigationSecondViewModel: ObservableObject {
     weak var coordinator: SecondCoordinator?
 
     init(coordinator: SecondCoordinator) {
@@ -142,9 +142,9 @@ class NavigationSecondViewModel: ObservableObject {
 
 }
 
-fileprivate struct NavigationSecondView : View {
+private struct NavigationSecondView: View {
     @ObservedObject var viewmodel: NavigationSecondViewModel
-    var body: some  View {
+    var body: some View {
         VStack {
             Text("View 2")
             Button("Pop Second") {
@@ -162,4 +162,3 @@ fileprivate struct NavigationSecondView : View {
 #Preview {
     NavigationDemoView()
 }
-

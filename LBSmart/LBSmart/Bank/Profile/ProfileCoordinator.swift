@@ -5,20 +5,25 @@
 //  Created by Elie Melki on 05/10/2026.
 //
 
-import SwiftUI
 import SwiftRouting
+import SwiftUI
 
-enum ProfileRoute: Route { case profile, personalDetails }
+enum ProfileRoute: Route {
+    case profile, personalDetails
+}
 
 enum ProfileInfoRoute: String, Route, CaseIterable {
     case security, privacy, support
 
-    var title: String { rawValue.capitalized }
+    var title: String {
+        rawValue.capitalized
+    }
     var message: String {
         switch self {
         case .security: return "Keep your banking secure with a strong passcode. LB SMART will never ask you to share your PIN."
         case .privacy: return "This demo uses sample data held in memory. It does not collect personal information."
-        case .support: return "For this demo, explore accounts, swipe your cards, and open the linked account. No real banking services are connected."
+        case .support:
+            return "For this demo, explore accounts, swipe your cards, and open the linked account. No real banking services are connected."
         }
     }
 }

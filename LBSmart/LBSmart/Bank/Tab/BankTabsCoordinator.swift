@@ -5,10 +5,12 @@
 //  Created by Elie Melki on 05/10/2026.
 //
 
-import SwiftUI
 import SwiftRouting
+import SwiftUI
 
-enum BankTab: Route { case accounts, cards, profile }
+enum BankTab: Route {
+    case accounts, cards, profile
+}
 
 /// Owns independent navigation coordinators for the signed-in tabs.
 @MainActor

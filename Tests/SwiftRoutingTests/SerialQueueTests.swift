@@ -1,3 +1,5 @@
+import Testing
+
 //
 //  SerialQueueTests.swift
 //  SwiftRouting
@@ -5,38 +7,42 @@
 //  Created by Elie Melki on 29/05/2025.
 //
 @testable import SwiftRouting
-import Testing
 
-actor ResultRecorder {
-    var result: [Int] = []
-
-    func append(_ value: Int) {
-        result.append(value)
-    }
-
-    func get() -> [Int] {
-        return result
-    }
-}
-
-
+@MainActor
 @Test func testSerialExecutionOrder() async {
-    let queue = await SerialQueue()
-    let recorder = ResultRecorder()
-
-    async let first: Void = queue.execute {
-        try? await Task.sleep(nanoseconds: 200_000_000) // 200ms
-        await recorder.append(1)
+    let queue = SerialQueue()
+    var events: [Int] = []
+    var releaseFirst: CheckedContinuation<Void, Never>?
+    let first = Task {
+        await queue.execute {
+            events.append(1)
+            await withCheckedContinuation {
+                releaseFirst = $0
+            }
+            events.append(2)
+        }
     }
-
-    async let second: Void = queue.execute {
-        await recorder.append(2)
+    while releaseFirst == nil {
+        await Task.yield()
     }
-
-    _ = await (first, second)
-
-    let result = await recorder.get()
-    #expect(result == [1, 2])
+    let second = Task {
+        await queue.execute {
+            events.append(3)
+        }
+    }
+    // The second operation must stay blocked while the first is suspended.
+    for _ in 0..<10 {
+        await Task.yield()
+    }
+    #expect(events == [1])
+    releaseFirst?.resume()
+    await first.value
+    await second.value
+    #expect(events == [1, 2, 3])
+    let value = await queue.execute {
+        42
+    }
+    #expect(value == 42)
 }
 
 @Test func testExecutionReturnsCorrectValue() async {
@@ -64,5 +70,3 @@ actor ResultRecorder {
 
     #expect(results == [0, 1, 2, 3, 4])
 }
-
-

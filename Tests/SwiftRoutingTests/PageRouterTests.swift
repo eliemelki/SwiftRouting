@@ -5,8 +5,10 @@
 //  Created by Elie Melki on 05/10/2026.
 //
 
-@testable import SwiftRouting
+import Combine
 import Testing
+
+@testable import SwiftRouting
 
 @MainActor
 @Test func testPageRouterSelection() {
@@ -20,10 +22,6 @@ import Testing
     router.select(index: 2)
     router.select(RouteEntry(TestRoute.second))
     #expect(router.selection == router.pages[0])
-    router.selectionBinding.wrappedValue = router.pages[1]
-    #expect(router.selection == router.pages[1])
-    router.selectionBinding.wrappedValue = nil
-    #expect(router.selection == router.pages[1])
 }
 
 @MainActor
@@ -68,4 +66,32 @@ import Testing
     empty.next()
     empty.previous()
     #expect(empty.selection == nil)
+}
+
+@MainActor
+@Test func testPageSelectionActionsPublishOnlyValidChanges() {
+    let router = PageRouter<TestRoute>(pages: [.first, .second])
+    let other = PageRouter<TestRoute>(pages: [.first, .second])
+    var selections: [RouteEntry<TestRoute>?] = []
+    let subscription = router.$selection.sink {
+        selections.append($0)
+    }
+    router.select(router.pages[0], animated: false)
+    router.select(other.pages[1])
+    router.select(index: Int.min)
+    router.select(index: Int.max)
+    #expect(selections == [router.pages[0]])
+    router.select(router.pages[1], animated: false)
+    router.select(.second)
+    #expect(selections == [router.pages[0], router.pages[1]])
+    subscription.cancel()
+}
+
+@MainActor
+@Test func testPageEmptySelectionRejectsForeignEntry() {
+    let router = PageRouter<TestRoute>(pages: [], selected: .second)
+    router.select(RouteEntry(TestRoute.second))
+    router.select(RouteEntry(TestRoute.first))
+    #expect(router.selection == nil)
+    #expect(router.pages.isEmpty)
 }

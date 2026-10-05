@@ -1,42 +1,13 @@
 //
-//  SheetsRouter+Actions.swift
+//  StackSheetsRouter+Actions.swift
 //  SwiftRouting
 //
 //  Created by Elie Melki on 03/04/2025.
 //
 
-// MARK: - SheetsActions
+// MARK: - StackSheetsRouter - SheetsActions
 
-/// Async actions for a stack of typed sheet presentations.
-@MainActor
-public protocol SheetsActions {
-    /// The destination value accepted by presentation actions.
-    associatedtype T: Route
-
-    /// See the corresponding async method on `SheetsRouter`.
-    @discardableResult
-    func show(_ route: T, sheetType: SheetType, animated: Bool, onDismiss: SheetDismissHandler?) async -> RouteEntry<T>?
-
-    /// See the corresponding async method on `SheetsRouter`.
-    @discardableResult
-    func replace(_ route: T, sheetType: SheetType, animated: Bool, onDismiss: SheetDismissHandler?) async -> RouteEntry<T>?
-
-    /// See the corresponding async method on `SheetsRouter`.
-    func hide(animated: Bool) async
-
-    /// See the corresponding async method on `SheetsRouter`.
-    func hide(index: Int, animated: Bool) async
-
-    /// See the corresponding async method on `SheetsRouter`.
-    func hide(entry: RouteEntry<T>, animated: Bool) async
-
-    /// See the corresponding async method on `SheetsRouter`.
-    func hideAll(animated: Bool) async
-}
-
-// MARK: - SheetsRouter - SheetsActions
-
-extension SheetsRouter: SheetsActions {
+extension StackSheetsRouter {
 
     /// Adds a new sheet above the current stack and assigns its presentation entry.
     /// Calls are serialized; this returns before the presentation animation finishes.
@@ -47,9 +18,19 @@ extension SheetsRouter: SheetsActions {
     ///   - onDismiss: Called once after this sheet is removed from the stack.
     /// - Returns: The new occurrence, or nil if the router is unavailable when its queued action runs.
     @discardableResult
-    public func show(_ route: T, sheetType: SheetType = .partial, animated: Bool = true, onDismiss: SheetDismissHandler? = nil) async -> RouteEntry<T>? {
+    public func show(
+        _ route: T,
+        sheetType: SheetType = .partial,
+        animated: Bool = true,
+        onDismiss: SheetDismissHandler? = nil
+    ) async -> RouteEntry<T>? {
         return await queue.execute { @MainActor [weak self] in
-            return await self?.showPresentation(route, sheetType: sheetType, animated: animated, onDismiss: onDismiss)
+            return await self?.showPresentation(
+                route,
+                sheetType: sheetType,
+                animated: animated,
+                onDismiss: onDismiss
+            )
         }
     }
 
@@ -62,10 +43,20 @@ extension SheetsRouter: SheetsActions {
     ///   - onDismiss: Called once after the replacement sheet is removed.
     /// - Returns: The new occurrence, or nil if the router is unavailable when its queued action runs.
     @discardableResult
-    public func replace(_ route: T, sheetType: SheetType = .partial, animated: Bool = true, onDismiss: SheetDismissHandler? = nil) async -> RouteEntry<T>? {
+    public func replace(
+        _ route: T,
+        sheetType: SheetType = .partial,
+        animated: Bool = true,
+        onDismiss: SheetDismissHandler? = nil
+    ) async -> RouteEntry<T>? {
         return await queue.execute { [weak self] in
             await self?.hidePresentations(animated: animated)
-            return await self?.showPresentation(route, sheetType: sheetType, animated: animated, onDismiss: onDismiss)
+            return await self?.showPresentation(
+                route,
+                sheetType: sheetType,
+                animated: animated,
+                onDismiss: onDismiss
+            )
         }
     }
 
@@ -105,7 +96,9 @@ extension SheetsRouter: SheetsActions {
     ///   - animated: Whether to allow the dismissal transitions to animate.
     public func hide(entry: RouteEntry<T>, animated: Bool = true) async {
         await queue.execute { [weak self] in
-            let index = self?.sheets.firstIndex { $0.isDisplaying(entry) }
+            let index = self?.sheets.firstIndex {
+                $0.isDisplaying(entry)
+            }
             guard let index else {
                 return
             }
@@ -114,21 +107,41 @@ extension SheetsRouter: SheetsActions {
     }
 }
 
-public extension SheetsRouter {
+public extension StackSheetsRouter {
 
     /// Schedules `show` in a task; use the async overload to receive its entry.
     /// Parameters have the same meaning as in the async overload.
-    func show(_ route: T, sheetType: SheetType = .partial, animated: Bool = true, onDismiss: SheetDismissHandler? = nil) {
+    func show(
+        _ route: T,
+        sheetType: SheetType = .partial,
+        animated: Bool = true,
+        onDismiss: SheetDismissHandler? = nil
+    ) {
         Task {
-            await self.show(route, sheetType: sheetType, animated: animated, onDismiss: onDismiss)
+            await self.show(
+                route,
+                sheetType: sheetType,
+                animated: animated,
+                onDismiss: onDismiss
+            )
         }
     }
 
     /// Schedules `replace` in a task; use the async overload to receive its entry.
     /// Parameters have the same meaning as in the async overload.
-    func replace(_ route: T, sheetType: SheetType = .partial, animated: Bool = true, onDismiss: SheetDismissHandler? = nil) {
+    func replace(
+        _ route: T,
+        sheetType: SheetType = .partial,
+        animated: Bool = true,
+        onDismiss: SheetDismissHandler? = nil
+    ) {
         Task {
-            await self.replace(route, sheetType: sheetType, animated: animated, onDismiss: onDismiss)
+            await self.replace(
+                route,
+                sheetType: sheetType,
+                animated: animated,
+                onDismiss: onDismiss
+            )
         }
     }
 

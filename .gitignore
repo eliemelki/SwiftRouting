@@ -68,3 +68,10 @@ fastlane/test_output
 # SPM
 .DS_Store
 xcuserdata
+
+# Local AI instructions and development helpers
+AGENTS.md
+/.agents/
+/.codex/
+/scripts/
+/.swift-format

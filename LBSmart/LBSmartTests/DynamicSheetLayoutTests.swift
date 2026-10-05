@@ -5,8 +5,8 @@
 //  Created by Elie Melki on 05/10/2026.
 //
 
-import SwiftUI
 import SwiftRouting
+import SwiftUI
 import Testing
 import UIKit
 
@@ -37,8 +37,14 @@ private struct SheetLayoutHost: View {
 @Test func testDynamicSheetTracksActualRenderedContentHeight() async throws {
     let model = SheetLayoutModel()
     let host = UIHostingController(rootView: SheetLayoutHost(model: model))
-    let scene = try #require(UIApplication.shared.connectedScenes.compactMap { $0 as? UIWindowScene }.first)
-    let previousWindow = scene.windows.first { $0.isKeyWindow }
+    let scene = try #require(
+        UIApplication.shared.connectedScenes.compactMap {
+            $0 as? UIWindowScene
+        }.first
+    )
+    let previousWindow = scene.windows.first {
+        $0.isKeyWindow
+    }
     let window = UIWindow(windowScene: scene)
     window.rootViewController = host
     window.makeKeyAndVisible()
@@ -50,24 +56,32 @@ private struct SheetLayoutHost: View {
     host.loadViewIfNeeded()
     model.isPresented = true
     let fitted = await waitForLayout {
-        guard let sheet = host.presentedViewController else { return false }
+        guard let sheet = host.presentedViewController else {
+            return false
+        }
         return sheet.view.bounds.height > 120 && sheet.view.bounds.height < 250
     }
     #expect(fitted)
     let sheet = try #require(host.presentedViewController)
     let initialHeight = sheet.view.bounds.height
     model.isExpanded = true
-    let expanded = await waitForLayout { sheet.view.bounds.height > initialHeight + 100 }
+    let expanded = await waitForLayout {
+        sheet.view.bounds.height > initialHeight + 100
+    }
     #expect(expanded)
     model.isExpanded = false
-    let collapsed = await waitForLayout { abs(sheet.view.bounds.height - initialHeight) < 5 }
+    let collapsed = await waitForLayout {
+        abs(sheet.view.bounds.height - initialHeight) < 5
+    }
     #expect(collapsed)
 }
 
 @MainActor
 private func waitForLayout(_ condition: () -> Bool) async -> Bool {
     for _ in 0..<40 {
-        if condition() { return true }
+        if condition() {
+            return true
+        }
         try? await Task.sleep(nanoseconds: 100_000_000)
     }
     return condition()

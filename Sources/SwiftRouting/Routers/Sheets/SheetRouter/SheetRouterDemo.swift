@@ -7,7 +7,7 @@
 
 import SwiftUI
 
-enum SheetDemoRoute: String, Route {
+private enum SheetDemoRoute: String, Route {
 
     case sheet1, sheet2
 
@@ -23,7 +23,7 @@ enum SheetDemoRoute: String, Route {
 }
 
 @MainActor
-class SheetCoordinator : ObservableObject {
+private class SheetCoordinator: ObservableObject {
     let sheetRouter = SheetRouter<SheetDemoRoute>()
 
     func showSheet1() {
@@ -46,8 +46,8 @@ class SheetCoordinator : ObservableObject {
     }
 }
 
-struct SheetDemoView : View {
-    @StateObject var coordinator: SheetCoordinator = .init()
+struct SheetDemoView: View {
+    @StateObject private var coordinator: SheetCoordinator = .init()
 
     var body: some View {
         VStack {
@@ -58,7 +58,7 @@ struct SheetDemoView : View {
     }
 }
 
-fileprivate struct SheetBase : View {
+private struct SheetBase: View {
     let coordinator: SheetCoordinator
     var body: some View {
         VStack {
@@ -70,9 +70,9 @@ fileprivate struct SheetBase : View {
     }
 }
 
-fileprivate struct SheetView1 : View {
+private struct SheetView1: View {
     let coordinator: SheetCoordinator
-    var body: some  View {
+    var body: some View {
         VStack {
             Text("SheetView1")
             Button("Replace SheetView1 by SheetView2 Full") {
@@ -87,9 +87,9 @@ fileprivate struct SheetView1 : View {
     }
 }
 
-fileprivate struct SheetView2 : View {
+private struct SheetView2: View {
     let coordinator: SheetCoordinator
-    var body: some  View {
+    var body: some View {
         VStack {
             Text("SheetView2")
             Button("hide SheetView2") {
@@ -103,4 +103,3 @@ fileprivate struct SheetView2 : View {
 #Preview {
     SheetDemoView()
 }
-

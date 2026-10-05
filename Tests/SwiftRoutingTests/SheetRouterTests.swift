@@ -6,8 +6,9 @@
 //
 
 import Foundation
-import Testing
 import SwiftUI
+import Testing
+
 @testable import SwiftRouting
 
 @MainActor
@@ -29,8 +30,6 @@ import SwiftUI
     await sheetRouter.show(firstRoute)
     sheetRouter.expectPartial(firstRoute)
 }
-
-
 
 @MainActor
 @Test func testSheetRouterMultipleShow() async throws {
@@ -57,7 +56,6 @@ import SwiftUI
     #expect(!secondDismissCalled)
     #expect(!thirdDismissCalled)
 
-
     await sheetRouter.show(firstRoute, sheetType: .fullScreen) {
         thirdDismissCalled = !thirdDismissCalled
     }
@@ -77,7 +75,6 @@ import SwiftUI
 @MainActor
 @Test func testSheetConcurrent() async throws {
     var dismissTrack: [Int] = []
-
 
     let sheetRouter = MockSheetRouter()
     let task1 = Task {
@@ -99,7 +96,7 @@ import SwiftUI
     async let t2 = await task2.value
     async let t3 = await task3.value
     let _ = await "\(t1) \(t2) \(t3)"
-    #expect(dismissTrack == [1,2])
+    #expect(dismissTrack == [1, 2])
     #expect(sheetRouter.fullScreenEntry?.route == secondRoute)
 
     let task4 = Task {
@@ -107,14 +104,12 @@ import SwiftUI
         return 4
     }
 
-
     async let t4 = await task4.value
 
     let _ = await "\(t4)"
 
-    #expect(dismissTrack == [1,2,3])
+    #expect(dismissTrack == [1, 2, 3])
 }
-
 
 extension MockSheetRouter {
 
@@ -156,9 +151,11 @@ extension MockSheetRouter {
 @Test func testDismissCallbackIsConsumedOnce() async {
     let router = SheetRouter<TestRoute>()
     var dismissCount = 0
-    await router.show(.first) { dismissCount += 1 }
-    router.partialEntry = nil // SwiftUI clears the item binding on a swipe.
-    router.didDismissFullScreen() // An unrelated callback must not clear the handler.
+    await router.show(.first) {
+        dismissCount += 1
+    }
+    router.partialEntry = nil  // SwiftUI clears the item binding on a swipe.
+    router.didDismissFullScreen()  // An unrelated callback must not clear the handler.
     #expect(dismissCount == 0)
     router.didDismissPartialSheet()
     router.didDismissPartialSheet()
@@ -169,14 +166,54 @@ extension MockSheetRouter {
 @Test func testReplacementWaitsForInteractiveDismissal() async {
     let router = SheetRouter<TestRoute>()
     var dismissCount = 0
-    await router.show(.first) { dismissCount += 1 }
+    await router.show(.first) {
+        dismissCount += 1
+    }
     router.partialEntry = nil
-    let replacement = Task { await router.show(.second, sheetType: .fullScreen) }
+    let replacement = Task {
+        await router.show(.second, sheetType: .fullScreen)
+    }
     // Let the queued replacement reach the dismissal continuation.
-    for _ in 0..<10 { await Task.yield() }
+    for _ in 0..<10 {
+        await Task.yield()
+    }
     #expect(router.fullScreenEntry == nil)
     router.didDismissPartialSheet()
     let entry = await replacement.value
     #expect(router.fullScreenEntry == entry)
     #expect(dismissCount == 1)
+}
+
+@MainActor
+@Test func testFullScreenDismissalIgnoresPrematureAndWrongCallbacks() async {
+    let router = SheetRouter<TestRoute>()
+    var callbacks = 0
+    let entry = await router.show(.second, sheetType: .fullScreen) {
+        callbacks += 1
+    }
+    router.didDismissFullScreen()
+    router.didDismissPartialSheet()
+    #expect(router.isDisplaying(entry))
+    #expect(callbacks == 0)
+    router.fullScreenEntry = nil
+    router.didDismissPartialSheet()
+    #expect(callbacks == 0)
+    router.didDismissFullScreen()
+    router.didDismissFullScreen()
+    #expect(callbacks == 1)
+    #expect(router.presentedSheetType == nil)
+    await router.hide(animated: false)
+    #expect(callbacks == 1)
+}
+
+@MainActor
+@Test func testHideEmptySheetDoesNotPreventLaterPresentation() async {
+    let router = MockSheetRouter()
+    await router.hide(animated: false)
+    await router.hide()
+    let entry = await router.show(.second, sheetType: .fullScreen, animated: false)
+    #expect(router.isDisplaying(entry))
+    await router.hide(animated: false)
+    #expect(!router.isDisplaying(entry))
+    #expect(!router.isPresentingSheet)
 }

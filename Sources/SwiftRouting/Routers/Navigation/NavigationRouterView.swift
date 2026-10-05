@@ -7,9 +7,9 @@
 import SwiftUI
 
 /// Renders a root destination and a typed navigation path in a `NavigationStack`.
-public struct NavigationRouterView<T : Route, V: View>: View {
+public struct NavigationRouterView<T: Route, V: View>: View {
 
-    @ObservedObject var router: NavigationRouter<T>
+    @ObservedObject private var router: NavigationRouter<T>
     private let makeView: @MainActor (T) -> V
 
     /// Creates a view using an externally owned router.
