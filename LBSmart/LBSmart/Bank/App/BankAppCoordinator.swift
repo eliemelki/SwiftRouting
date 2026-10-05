@@ -13,7 +13,7 @@ enum BankAppRoute: Route { case login, signedIn }
 
 /// Owns the login flow and the lifetime of a signed-in session.
 @MainActor
-final class BankAppCoordinator: ObservableObject, LoginCoordinator {
+final class BankAppCoordinator: LoginCoordinator {
     @Published private(set) var route: BankAppRoute = .login
     /// Hides the concrete @Published storage from the root view model.
     var routePublisher: AnyPublisher<BankAppRoute, Never> { $route.eraseToAnyPublisher() }

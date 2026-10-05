@@ -11,7 +11,7 @@ import SwiftRouting
 enum AccountsRoute: Route { case accounts, detail(BankAccount) }
 
 @MainActor
-final class AccountsCoordinator: ObservableObject, AccountsViewCoordinator, AccountsNavigationCoordinator, AccountDetailCoordinator {
+final class AccountsCoordinator: AccountsViewCoordinator, AccountsNavigationCoordinator, AccountDetailCoordinator {
     let navigationRouter = NavigationRouter<AccountsRoute>(root: .accounts)
 
     @discardableResult

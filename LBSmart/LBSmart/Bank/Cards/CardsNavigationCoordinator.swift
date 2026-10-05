@@ -11,7 +11,7 @@ import SwiftRouting
 enum CardsRoute: Route { case cards, accountDetail(BankAccount) }
 
 @MainActor
-final class CardsNavigationCoordinator: ObservableObject, CardCoordinator, AccountDetailCoordinator {
+final class CardsNavigationCoordinator: CardCoordinator, AccountDetailCoordinator {
     let navigationRouter = NavigationRouter<CardsRoute>(root: .cards)
     private(set) lazy var pagingCoordinator = CardsViewCoordinator(navigationCoordinator: self)
 

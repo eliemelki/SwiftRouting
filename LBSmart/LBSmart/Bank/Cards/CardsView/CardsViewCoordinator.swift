@@ -1,5 +1,5 @@
 //
-//  CardsPagingCoordinator.swift
+//  CardsViewCoordinator.swift
 //  LBSmart
 //
 //  Created by Elie Melki on 05/10/2026.
@@ -10,7 +10,7 @@ import SwiftRouting
 
 /// Owns card paging and builds each card's content.
 @MainActor
-final class CardsViewCoordinator: ObservableObject {
+final class CardsViewCoordinator {
     let pageRouter = PageRouter<BankCard>(pages: BankCard.samples)
     private weak var navigationCoordinator: CardsNavigationCoordinator?
 

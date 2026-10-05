@@ -287,13 +287,13 @@ consumer APIs remain public.
 `BankAppCoordinator` controls the login/signed-in root state. `BankTabsCoordinator`
 owns `TabRouter` and the three tab coordinators. `AccountsCoordinator`,
 `CardsNavigationCoordinator`, and `ProfileCoordinator` each own a `NavigationRouter`;
-`CardsPagingCoordinator` owns the card pager separately, and Profile owns its sheet
+`CardsViewCoordinator` owns the card pager separately, and Profile owns its sheet
 router. Only the tab hosts
 create navigation stacks, avoiding a navigation stack wrapped around the tab bar.
 Action-only models use protocols such as `LoginCoordinator`, `ProfileViewCoordinator`,
 and `AccountDetailCoordinator`. The app, tab, and Cards container hosts use concrete
 coordinators. The Cards view
-and view model use `CardsPagingCoordinator` directly, without generics or a container
+and view model use `CardsViewCoordinator` directly, without generics or a container
 protocol. Accounts and Profile retain their typed container protocols.
 Each protocol lives in its own Swift file beside its screen or host.
 
@@ -302,6 +302,8 @@ The app view model relays `BankAppCoordinator.routePublisher` into its own publi
 state changes in the coordinator. `assign(to: &$route)` keeps the subscription
 alive for the model's published property without a separate cancellable. The app
 coordinator exposes an erased publisher rather than its concrete `@Published` storage.
+Coordinators do not conform to `ObservableObject`: views observe their view models
+and routers, and the app view model subscribes directly to the route publisher.
 
 Parent coordinator references are weak, so the session and child coordinators do
 not retain each other in cycles. Destination view builders do not mutate router state.
