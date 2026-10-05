@@ -9,7 +9,8 @@ import SwiftRouting
 import SwiftUI
 
 enum BankAppRoute: Route {
-    case login, signedIn
+    case login
+    case signedIn
 }
 
 /// Owns the login flow and the lifetime of a signed-in session.

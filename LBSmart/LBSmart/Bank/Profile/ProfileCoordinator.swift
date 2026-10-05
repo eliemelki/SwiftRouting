@@ -9,11 +9,14 @@ import SwiftRouting
 import SwiftUI
 
 enum ProfileRoute: Route {
-    case profile, personalDetails
+    case profile
+    case personalDetails
 }
 
 enum ProfileInfoRoute: String, Route, CaseIterable {
-    case security, privacy, support
+    case security
+    case privacy
+    case support
 
     var title: String {
         rawValue.capitalized

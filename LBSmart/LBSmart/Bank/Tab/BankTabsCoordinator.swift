@@ -8,17 +8,22 @@
 import SwiftRouting
 import SwiftUI
 
-enum BankTab: Route {
-    case accounts, cards, transfer, profile
+enum BankTabRoute: Route, CaseIterable {
+    case accounts
+    case cards
+    case transfer
+    case profile
 }
 
 /// Owns independent navigation coordinators for the signed-in tabs.
 @MainActor
 final class BankTabsCoordinator {
-    let tabRouter = TabRouter<BankTab>(tabs: [.accounts, .cards, .transfer, .profile])
+    let tabRouter = TabRouter<BankTabRoute>(tabs: BankTabRoute.allCases)
+    
     let accountsCoordinator = AccountsCoordinator()
     let cardsCoordinator = CardsNavigationCoordinator()
     let transferCoordinator = TransferCoordinator()
+    
     private(set) lazy var profileCoordinator = ProfileCoordinator(sessionCoordinator: self)
     private weak var appCoordinator: BankAppCoordinator?
 
@@ -31,7 +36,7 @@ final class BankTabsCoordinator {
     }
 
     @ViewBuilder
-    func makeView(for tab: BankTab) -> some View {
+    func makeView(for tab: BankTabRoute) -> some View {
         switch tab {
         case .accounts:
             AccountsNavigationView(viewModel: AccountsNavigationViewModel(coordinator: accountsCoordinator))

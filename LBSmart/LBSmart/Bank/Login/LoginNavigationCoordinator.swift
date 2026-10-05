@@ -2,7 +2,8 @@ import SwiftRouting
 import SwiftUI
 
 enum LoginRoute: Route {
-    case login, contactUs
+    case login
+    case contactUs
 }
 
 @MainActor
