@@ -9,7 +9,8 @@ import SwiftUI
 import SwiftRouting
 
 enum ProfileRoute: Route { case profile, personalDetails }
-enum ProfileInfo: String, Route, CaseIterable {
+
+enum ProfileInfoRoute: String, Route, CaseIterable {
     case security, privacy, support
 
     var title: String { rawValue.capitalized }
@@ -25,7 +26,7 @@ enum ProfileInfo: String, Route, CaseIterable {
 @MainActor
 final class ProfileCoordinator: ObservableObject {
     let navigationRouter = NavigationRouter<ProfileRoute>(root: .profile)
-    let sheetRouter = SheetRouter<ProfileInfo>()
+    let sheetRouter = SheetRouter<ProfileInfoRoute>()
     private weak var sessionCoordinator: BankSessionCoordinator?
 
     init(sessionCoordinator: BankSessionCoordinator) {
@@ -40,7 +41,7 @@ final class ProfileCoordinator: ObservableObject {
         navigationRouter.popLast()
     }
 
-    func showInfo(_ info: ProfileInfo) {
+    func showInfo(_ info: ProfileInfoRoute) {
         sheetRouter.show(info)
     }
 
@@ -62,7 +63,7 @@ final class ProfileCoordinator: ObservableObject {
         }
     }
 
-    func makeSheet(for info: ProfileInfo) -> InfoSheetView {
+    func makeSheet(for info: ProfileInfoRoute) -> InfoSheetView {
         InfoSheetView(viewModel: InfoSheetViewModel(info: info, coordinator: self))
     }
 }

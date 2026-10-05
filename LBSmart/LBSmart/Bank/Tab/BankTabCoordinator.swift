@@ -12,7 +12,7 @@ enum BankTab: Route { case accounts, cards, profile }
 
 /// Owns independent navigation coordinators for the signed-in tabs.
 @MainActor
-final class BankSessionCoordinator: ObservableObject {
+final class BankTabCoordinator: ObservableObject {
     let tabRouter = TabRouter<BankTab>(tabs: [.accounts, .cards, .profile])
     let accountsCoordinator = AccountsCoordinator()
     let cardsCoordinator = CardsCoordinator()

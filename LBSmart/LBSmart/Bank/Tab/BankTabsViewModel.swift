@@ -9,9 +9,9 @@ import SwiftUI
 
 @MainActor
 final class BankTabsViewModel: ObservableObject {
-    let coordinator: BankSessionCoordinator
+    let coordinator: BankTabCoordinator
 
-    init(coordinator: BankSessionCoordinator) {
+    init(coordinator: BankTabCoordinator) {
         self.coordinator = coordinator
     }
 }

@@ -14,17 +14,17 @@ enum BankAppRoute: Route { case login, signedIn }
 @MainActor
 final class BankAppCoordinator: ObservableObject {
     @Published private(set) var route: BankAppRoute = .login
-    private(set) var session: BankSessionCoordinator?
+    private(set) var tabCoordinator: BankTabCoordinator?
 
     func signIn() {
-        guard session == nil else { return }
-        session = BankSessionCoordinator(appCoordinator: self)
+        guard tabCoordinator == nil else { return }
+        tabCoordinator = BankTabCoordinator(appCoordinator: self)
         route = .signedIn
     }
 
     func signOut() {
         route = .login
-        session = nil
+        tabCoordinator = nil
     }
 
     @ViewBuilder
@@ -33,8 +33,8 @@ final class BankAppCoordinator: ObservableObject {
         case .login:
             LoginView(viewModel: LoginViewModel(coordinator: self))
         case .signedIn:
-            if let session {
-                BankTabsView(viewModel: BankTabsViewModel(coordinator: session))
+            if let tabCoordinator {
+                BankTabsView(viewModel: BankTabsViewModel(coordinator: tabCoordinator))
             }
         }
     }
