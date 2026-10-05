@@ -15,8 +15,9 @@ struct BankAppView: View {
     }
 
     var body: some View {
-        // Switch the app root; each signed-in tab owns its own NavigationStack.
-        viewModel.coordinator.makeView(for: viewModel.route)
+        viewModel.coordinator.stateRouter.view { route in
+            viewModel.coordinator.makeView(for: route)
+        }
             .tint(.teal)
     }
 }

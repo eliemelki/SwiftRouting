@@ -6,7 +6,6 @@
 //
 
 import SwiftUI
-import Combine
 import SwiftRouting
 
 enum BankAppRoute: Route { case login, signedIn }
@@ -14,19 +13,17 @@ enum BankAppRoute: Route { case login, signedIn }
 /// Owns the login flow and the lifetime of a signed-in session.
 @MainActor
 final class BankAppCoordinator: LoginCoordinator {
-    @Published private(set) var route: BankAppRoute = .login
-    /// Hides the concrete @Published storage from the root view model.
-    var routePublisher: AnyPublisher<BankAppRoute, Never> { $route.eraseToAnyPublisher() }
+    let stateRouter = StateRouter<BankAppRoute>(route: .login)
     private(set) var tabCoordinator: BankTabsCoordinator?
 
     func signIn() {
         guard tabCoordinator == nil else { return }
         tabCoordinator = BankTabsCoordinator(appCoordinator: self)
-        route = .signedIn
+        stateRouter.set(.signedIn)
     }
 
     func signOut() {
-        route = .login
+        stateRouter.set(.login)
         tabCoordinator = nil
     }
 

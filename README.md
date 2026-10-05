@@ -1,7 +1,7 @@
 # SwiftRouting
 
 SwiftRouting separates SwiftUI destination views from the code that decides when
-to navigate, present a sheet, switch tabs, or change pages. It supports iOS 16 and
+to navigate, present a sheet, switch tabs, change pages, or replace the current view. It supports iOS 16 and
 later and uses Swift 6.
 
 ## Routes and entries
@@ -45,14 +45,38 @@ values; the host view supplies their destination views.
 
 | Router | Behavior |
 | --- | --- |
+| `StateRouter<T>` | One current destination, replaced without navigation history. |
 | `NavigationRouter<T>` | A root destination with a stack of pushed entries. |
 | `SheetRouter<T>` | One partial sheet or full-screen cover; showing another replaces it. |
 | `SheetsRouter<T>` | A stack of partial sheets and full-screen covers. |
 | `TabRouter<T>` | A fixed collection of tabs with a selected entry. |
 | `PageRouter<T>` | A fixed collection of swipeable pages with a selected entry. |
 
-All five routers expose `view(...)` to build a host view. Sheet routers also have
+All six routers expose `view(...)` to build a host view. Sheet routers also have
 view modifiers for attaching their presenters to existing content.
+
+### State replacement
+
+```swift
+@MainActor
+struct StateExample: View {
+    @StateObject private var router = StateRouter<AppRoute>(route: .home)
+
+    var body: some View {
+        router.view { route in
+            destination(for: route)
+        }
+    }
+
+    private func showSettings() {
+        router.set(.settings)
+    }
+}
+```
+
+`set(_:)` replaces the destination without a stack or queue. Setting the same route
+is a no-op. Changing routes resets the destination's local view state. The router
+handles presentation; coordinators manage session creation and cleanup.
 
 ### Navigation
 
@@ -297,13 +321,10 @@ and view model use `CardsViewCoordinator` directly, without generics or a contai
 protocol. Accounts and Profile retain their typed container protocols.
 Each protocol lives in its own Swift file beside its screen or host.
 
-The app view model relays `BankAppCoordinator.routePublisher` into its own published
-`route`. The view observes the model, so it needs this relay to redraw when login
-state changes in the coordinator. `assign(to: &$route)` keeps the subscription
-alive for the model's published property without a separate cancellable. The app
-coordinator exposes an erased publisher rather than its concrete `@Published` storage.
-Coordinators do not conform to `ObservableObject`: views observe their view models
-and routers, and the app view model subscribes directly to the route publisher.
+`BankAppCoordinator` owns `StateRouter<BankAppRoute>` and switches between login
+and the signed-in tabs. The router host observes state directly, so the app view
+model only retains its coordinator. Coordinators do not conform to `ObservableObject`;
+views observe their view models and routers.
 
 Parent coordinator references are weak, so the session and child coordinators do
 not retain each other in cycles. Destination view builders do not mutate router state.

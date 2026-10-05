@@ -42,15 +42,15 @@ private final class ProfileCoordinatorSpy: ProfileViewCoordinator {
 }
 
 @MainActor
-@Test func testRootModelRelaysCoordinatorStateAndReleasesSubscription() {
+@Test func testRootModelUsesStateRouterAndIsReleased() {
     let coordinator = BankAppCoordinator()
     var model: BankAppViewModel? = BankAppViewModel(coordinator: coordinator)
     weak var weakModel = model
-    #expect(model?.route == .login)
+    #expect(model?.coordinator.stateRouter.route == .login)
     coordinator.signIn()
-    #expect(model?.route == .signedIn)
+    #expect(model?.coordinator.stateRouter.route == .signedIn)
     coordinator.signOut()
-    #expect(model?.route == .login)
+    #expect(model?.coordinator.stateRouter.route == .login)
     model = nil
     #expect(weakModel == nil)
     coordinator.signIn()
