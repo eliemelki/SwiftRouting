@@ -1,4 +1,10 @@
 // swift-tools-version: 6.0
+//
+//  Package.swift
+//  SwiftRouting
+//
+//  Created by Elie Melki on 05/10/2026.
+//
 // The swift-tools-version declares the minimum version of Swift required to build this package.
 
 import PackageDescription

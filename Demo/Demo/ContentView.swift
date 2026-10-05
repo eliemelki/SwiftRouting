@@ -8,47 +8,19 @@
 import SwiftUI
 @testable import SwiftRouting
 
-
- struct ContentView: View {
-
+struct ContentView: View {
     var body: some View {
-        VStack {
-            VStack {
-                Text("Sheet Demo")
-                SheetDemoView()
+        ScrollView {
+            VStack(spacing: 24) {
+                GroupBox("Single sheet") { SheetDemoView() }
+                GroupBox("Stacked sheets") { SheetsDemoView() }
+                GroupBox("Navigation") { NavigationDemoView().frame(height: 300) }
+                GroupBox("Tabs") { TabDemoView().frame(height: 200) }
+                GroupBox("Pages") { PageDemoView().frame(height: 250) }
             }
-            .frame(maxWidth: .infinity)
-            .border(Color.black)
-
-            VStack {
-                Text("Sheets Demo")
-                SheetsDemoView()
-            }
-            .frame(maxWidth: .infinity)
-            .border(Color.black)
-            VStack {
-                Text("Navigation Demo")
-                NavigationDemoView()
-            }
-            .border(Color.black)
-
-            VStack {
-                Text("Tab Demo")
-                TabDemoView()
-            }
-            .frame(height: 180)
-            .border(Color.black)
-
-            VStack {
-                Text("Page Demo")
-                PageDemoView()
-            }
-            .frame(height: 180)
-            .border(Color.black)
+            .padding()
         }
     }
 }
 
-#Preview {
-    ContentView()
-}
+#Preview { ContentView() }

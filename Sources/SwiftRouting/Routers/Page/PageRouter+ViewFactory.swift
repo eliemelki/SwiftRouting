@@ -1,3 +1,10 @@
+//
+//  PageRouter+ViewFactory.swift
+//  SwiftRouting
+//
+//  Created by Elie Melki on 05/10/2026.
+//
+
 import SwiftUI
 
 extension PageRouter {

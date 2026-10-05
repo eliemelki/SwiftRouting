@@ -135,6 +135,37 @@ presentation host per single-sheet router.
 
 See [SheetRouterDemo](Sources/SwiftRouting/Routers/Sheets/SheetRouter/SheetRouterDemo.swift).
 
+### Content-sized sheets
+
+Apply `dynamicSheetSize()` to a partial sheet's destination to measure its ideal
+content height and update its detent whenever that height changes:
+
+```swift
+.sheetRouterView(router) { route in
+    VStack(alignment: .leading, spacing: 16) {
+        Text("Information").font(.headline)
+        Text("Content can grow, shrink, or wrap as the available width changes.")
+    }
+    .padding(24)
+    .dynamicSheetSize()
+}
+```
+
+This is an opt-in destination modifier, so it works with both single and stacked
+sheet routers without changing routing APIs. It supports iOS 16+, uses SwiftUI's
+[height detents](https://developer.apple.com/documentation/swiftui/presentationdetent),
+and places the content in a vertical scroll view for accessibility when it exceeds
+the available sheet height. The system adds its presentation safe areas.
+
+Use intrinsically sized content. Avoid an expanding `Spacer`, a `List`, or a nested
+`ScrollView`, and include desired padding before the modifier. Do not combine it
+with another `presentationDetents` modifier. A large detent is used for the first
+layout until the content's height can be measured. Full-screen covers do not use detents.
+
+LB SMART's **Profile → Security** and **Profile → Privacy** links use this modifier.
+Tap **Learn more** or **Show less** to change their content and sheet height.
+**Support** keeps standard medium/large detents for comparison.
+
 ### Stacked sheets
 
 ```swift
@@ -228,6 +259,41 @@ Page indicators use `.automatic` by default; `indexDisplayMode:` also accepts
 `.always` and `.never`. An empty page collection renders no pager.
 
 See [PageRouterDemo](Sources/SwiftRouting/Routers/Page/PageRouterDemo.swift).
+
+## Bank demo app
+
+Open `LBSmart/LBSmart.xcodeproj` and run the `LBSmart` scheme.
+The separate `Demo/Demo.xcodeproj` remains the individual-router showcase. The app launches at a
+sample login screen. Tap **Sign in to demo** to enter LB SMART; no credentials
+or network services are involved.
+
+Every bank screen has its own view model. Views own their models with `@StateObject`,
+view models keep a coordinator, and coordinators create routers and build destinations.
+View actions call view-model methods, which delegate navigation to coordinators.
+Demo types and cross-file methods have module-internal access; view-model storage,
+implementation-only dependencies, and parent references are private. The package's
+consumer APIs remain public.
+
+- **Accounts:** a navigation stack listing sample accounts and their detail screens.
+- **Cards:** an independent navigation stack containing a `PageRouter` of cards.
+  Each card opens its linked account in the Cards stack using the same account-detail
+  view and view model as Accounts.
+- **Profile:** an independent navigation stack for personal details, with security,
+  privacy, and support links presented through `SheetRouter`.
+- **Sign out:** returns to login and releases the session. Signing in again creates
+  fresh tabs, navigation paths, and pager state.
+
+`BankAppCoordinator` controls the login/signed-in root state. `BankSessionCoordinator`
+owns `TabRouter` and the three tab coordinators. `AccountsCoordinator`,
+`CardsCoordinator`, and `ProfileCoordinator` each own a `NavigationRouter`;
+Cards also owns its pager, and Profile owns its sheet router. Only the tab hosts
+create navigation stacks, avoiding a navigation stack wrapped around the tab bar.
+Parent coordinator references are weak, so the session and child coordinators do
+not retain each other in cycles. Destination view builders do not mutate router state.
+
+The example is in [LBSmart/LBSmart/Bank](LBSmart/LBSmart/Bank). Flow tests cover sign-in/sign-out,
+independent tab navigation, linked-account details, pager selection, profile routing,
+session release, and rendered sheet expansion/collapse.
 
 ## Ownership and animation
 

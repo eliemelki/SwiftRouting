@@ -1,3 +1,10 @@
+//
+//  PageRouter.swift
+//  SwiftRouting
+//
+//  Created by Elie Melki on 05/10/2026.
+//
+
 import SwiftUI
 
 /// Coordinates selection among a fixed collection of pages.

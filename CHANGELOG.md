@@ -26,6 +26,11 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Added
 
+- `dynamicSheetSize()` for content-sized, scrollable partial-sheet destinations on iOS 16+.
+- A standalone `LBSmart.xcodeproj` bank demo branded LB SMART, with expandable content-sized profile sheets.
+
+- A sample bank app using a View → ViewModel → Coordinator flow, with login, independent tab navigation, card paging, account details, and profile sheets.
+
 - Typed tab and page routers with programmatic selection and demos.
 
 ## [1.0.1] - 2025-05-22

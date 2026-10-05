@@ -1,3 +1,10 @@
+//
+//  TabRouterView.swift
+//  SwiftRouting
+//
+//  Created by Elie Melki on 05/10/2026.
+//
+
 import SwiftUI
 
 /// Renders typed destinations as tabs and synchronizes selection with the router.

@@ -22,6 +22,7 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		452312B7307321C100D32A36 /* LBSmart.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = LBSmart.xcodeproj; path = ../LBSmart/LBSmart.xcodeproj; sourceTree = SOURCE_ROOT; };
 		453B25C02D7E834A00427743 /* Demo.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Demo.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		45A56ABF2D9B5D1800F9D35A /* DemoTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = DemoTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
@@ -59,9 +60,17 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		45231309307321C100D32A36 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
 		453B25B72D7E834A00427743 = {
 			isa = PBXGroup;
 			children = (
+				452312B7307321C100D32A36 /* LBSmart.xcodeproj */,
 				453B25C22D7E834A00427743 /* Demo */,
 				45A56AC02D9B5D1800F9D35A /* DemoTests */,
 				453B25C12D7E834A00427743 /* Products */,
@@ -161,6 +170,12 @@
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 453B25C12D7E834A00427743 /* Products */;
 			projectDirPath = "";
+			projectReferences = (
+				{
+					ProductGroup = 45231309307321C100D32A36 /* Products */;
+					ProjectRef = 452312B7307321C100D32A36 /* LBSmart.xcodeproj */;
+				},
+			);
 			projectRoot = "";
 			targets = (
 				453B25BF2D7E834A00427743 /* Demo */,
