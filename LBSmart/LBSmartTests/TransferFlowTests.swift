@@ -160,7 +160,7 @@ func testTransferRejectsInvalidAmounts(_ amount: String) {
     details.review()
     session.tabRouter.select(.profile)
     session.tabRouter.select(.transfer)
-    #expect(try reviewDraft(from: coordinator).draft.recipient == "Jamie")
+    #expect(try reviewDraft(from: coordinator).recipient == "Jamie")
     #expect(details.draft.recipient == "Jamie")
     #expect(session.accountsCoordinator.navigationRouter.path.isEmpty)
     #expect(session.cardsCoordinator.navigationRouter.path.isEmpty)
