@@ -15,7 +15,7 @@ import Testing
     let rootModel = BankAppViewModel(coordinator: app)
     #expect(rootModel.coordinator.stateRouter.route == .login)
     #expect(app.tabCoordinator == nil)
-    LoginViewModel(coordinator: app).signIn()
+    LoginViewModel(coordinator: app.loginCoordinator).signIn()
     let session = try #require(app.tabCoordinator)
     #expect(rootModel.coordinator.stateRouter.route == .signedIn)
     session.cardsCoordinator.showLinkedAccount(for: BankCard.samples[0])

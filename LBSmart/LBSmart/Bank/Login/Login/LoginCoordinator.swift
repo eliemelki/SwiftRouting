@@ -11,4 +11,5 @@ import Foundation
 @MainActor
 protocol LoginCoordinator: AnyObject {
     func signIn()
+    func showContactUs()
 }

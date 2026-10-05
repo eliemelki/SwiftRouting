@@ -21,6 +21,7 @@ struct BankTabsView: View {
             switch tab {
             case .accounts: Label("Accounts", systemImage: "building.columns")
             case .cards: Label("Cards", systemImage: "creditcard")
+            case .transfer: Label("Transfer", systemImage: "arrow.left.arrow.right")
             case .profile: Label("Profile", systemImage: "person.crop.circle")
             }
         }

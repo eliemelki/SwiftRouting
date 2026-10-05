@@ -33,6 +33,9 @@ struct LoginView: View {
             }
             .buttonStyle(.borderedProminent)
             .accessibilityIdentifier("bank.signIn")
+            Button("Contact us", action: viewModel.showContactUs)
+                .frame(maxWidth: .infinity)
+                .accessibilityIdentifier("bank.contactUs")
             Text("Sample accounts and cards. No credentials required.")
                 .font(.footnote)
                 .foregroundStyle(.secondary)

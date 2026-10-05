@@ -12,6 +12,11 @@ import Testing
 @MainActor
 private final class LoginCoordinatorSpy: LoginCoordinator {
     private(set) var signInCount = 0
+    private(set) var contactUsCount = 0
+
+    func showContactUs() {
+        contactUsCount += 1
+    }
     func signIn() {
         signInCount += 1
     }
@@ -39,6 +44,8 @@ private final class ProfileCoordinatorSpy: ProfileViewCoordinator {
     let login = LoginCoordinatorSpy()
     LoginViewModel(coordinator: login).signIn()
     #expect(login.signInCount == 1)
+    LoginViewModel(coordinator: login).showContactUs()
+    #expect(login.contactUsCount == 1)
 
     let profile = ProfileCoordinatorSpy()
     let model = ProfileViewModel(coordinator: profile)

@@ -15,6 +15,10 @@ final class LoginViewModel: ObservableObject {
         self.coordinator = coordinator
     }
 
+    func showContactUs() {
+        coordinator.showContactUs()
+    }
+
     func signIn() {
         coordinator.signIn()
     }

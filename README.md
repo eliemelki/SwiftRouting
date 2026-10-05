@@ -311,18 +311,29 @@ Demo types and cross-file methods have module-internal access; view-model storag
 implementation-only dependencies, and parent references are private. The package's
 consumer APIs remain public.
 
+- **Login:** its own navigation stack, with a Contact Us screen available before
+  signing in. Sign-in and logout reset this stack to the login root.
 - **Accounts:** a navigation stack listing sample accounts and their detail screens.
 - **Cards:** an independent navigation stack containing a `PageRouter` of cards.
   Each card opens its linked account in the Cards stack using the same account-detail
   view and view model as Accounts.
-- **Profile:** an independent navigation stack for personal details, with security,
+- **Transfer (third tab):** Details → Review → Confirmation, with a shared
+  `TransferDraft` class created by Details and passed by reference to each
+  subsequent screen. ViewModels observe the same model, so Review edits and resets
+  are visible in Details. ViewModels handle edits, validation, receipt creation, and resetting.
+  The coordinator only passes the model, builds screens, and changes navigation. Confirmation carries
+  a required immutable receipt. Edits survive back navigation
+  and tab changes. Cancellation and starting another transfer reset the draft.
+  Confirmation creates a demo receipt without moving money.
+- **Profile (fourth tab):** an independent navigation stack for personal details, with security,
   privacy, and support links presented through `SheetRouter`.
 - **Sign out:** returns to login and releases the session. Signing in again creates
   fresh tabs, navigation paths, and pager state.
 
-`BankAppCoordinator` controls the login/signed-in root state. `BankTabsCoordinator`
-owns `TabRouter` and the three tab coordinators. `AccountsCoordinator`,
-`CardsNavigationCoordinator`, and `ProfileCoordinator` each own a `NavigationRouter`;
+`BankAppCoordinator` controls the login/signed-in root state and owns
+`LoginNavigationCoordinator`, which handles login and contact navigation. `BankTabsCoordinator`
+owns `TabRouter` and the four tab coordinators. `AccountsCoordinator`,
+`CardsNavigationCoordinator`, `TransferCoordinator`, and `ProfileCoordinator` each own a `NavigationRouter`;
 `CardsViewCoordinator` owns the card pager separately, and Profile owns its sheet
 router. Only the tab hosts
 create navigation stacks, avoiding a navigation stack wrapped around the tab bar.
@@ -330,20 +341,24 @@ Action-only models use protocols such as `LoginCoordinator`, `ProfileViewCoordin
 and `AccountDetailCoordinator`. The app, tab, and Cards container hosts use concrete
 coordinators. The Cards view
 and view model use `CardsViewCoordinator` directly, without generics or a container
+protocol. Transfer also uses a concrete navigation host without a container
 protocol. Accounts and Profile retain their typed container protocols.
 Each protocol lives in its own Swift file beside its screen or host.
+Contact Us uses sample support information for the demo.
 
 `BankAppCoordinator` owns `StateRouter<BankAppRoute>` and switches between login
 and the signed-in tabs. The router host observes state directly, so the app view
 model only retains its coordinator. Coordinators do not conform to `ObservableObject`;
-views observe their view models and routers.
+views observe their view models and routers. Transfer screen view models observe the same draft instance; focused coordinator
+protocols handle navigation only.
 
 Parent coordinator references are weak, so the session and child coordinators do
 not retain each other in cycles. Destination view builders do not mutate router state.
 
 The example is in [LBSmart/LBSmart/Bank](LBSmart/LBSmart/Bank). Flow tests cover sign-in/sign-out,
 independent tab navigation, linked-account details, pager selection, profile routing,
-session release, and rendered sheet expansion/collapse.
+shared transfer updates, validation, cancellation, confirmation, session release,
+and rendered sheet expansion/collapse.
 
 ## Ownership and animation
 

@@ -17,7 +17,9 @@ Requires Swift 6 and iOS 16 or later.
   and its successors, while `pop(to:)` keeps the target occurrence.
 - `dynamicSheetSize()` for content-sized, scrollable partial sheets on iOS 16+.
 - A separate LB SMART bank demo with login, independent tab navigation, card paging,
-  account details, and expandable profile sheets using View → ViewModel → Coordinator.
+  account details, a three-screen transfer flow with a screen-owned model shared by reference through the flow,
+  login navigation to Contact Us, and expandable profile sheets using
+  View → ViewModel → Coordinator.
 - Tests for queue ordering, route identities, sheet dismissal, state replacement,
   tab/page selection, bank flows, ownership, and rendered sheet sizing.
 
